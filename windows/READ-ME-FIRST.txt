@@ -1,0 +1,57 @@
+Squidpal for Windows - alpha
+============================
+
+Squidpal is a small app in the taskbar tray (bottom-right, near the clock) that
+keeps a diary of your workday. It reads what's on screen in the apps you use and
+what you type, and saves it as text files (one per day) in a folder you choose,
+so your AI assistant can help you keep track of follow-ups and context.
+
+IMPORTANT BEFORE YOU START
+- It saves almost everything you see and type: email, chats, web pages,
+  documents - including what other people write to you.
+- Everything stays on your computer, in the folder you choose. The app makes no
+  network requests. If you pick a synced folder (OneDrive, Drive, Dropbox), the
+  files go there.
+- Passwords, API keys, card numbers, national ID numbers and one-time codes are
+  masked before anything is saved, and password fields and password managers are
+  never read. Masking is pattern-based and not a guarantee.
+- The tray icon shows whether it's recording (coloured) or paused (grey-white).
+  Pause from the menu when you're doing something you don't want logged.
+
+INSTALL
+1. Unzip. Put Squidpal.exe wherever you like, e.g. in a folder under Documents.
+   (There's no installer; it runs directly.)
+2. Double-click Squidpal.exe. Windows SmartScreen will likely show "Windows
+   protected your PC", because the app isn't signed by a registered developer.
+3. Click "More info" and then "Run anyway".
+
+FIRST RUN
+1. A folder picker appears. Choose or create a folder for the day files.
+2. An icon appears in the tray. If it's hidden, click the "^" arrow to show
+   hidden icons, and drag Squidpal out so it's always visible.
+3. The icon turns coloured = recording. Done.
+
+The first time you switch to a Chrome or Edge window it may take an extra second
+while the browser turns on its accessibility mode. That's normal.
+
+IN THE MENU (right-click the icon)
+- Pause: 15 minutes, 1 hour, or until you turn it back on.
+- Open today's file, show the folder, delete today's file, change folder.
+- Number of records, number of redactions, and file size today.
+
+START WITH WINDOWS (optional)
+Press Win+R, type shell:startup, and put a shortcut to Squidpal.exe in the
+folder that opens.
+
+NOTHING IS RECORDED WHEN
+- The screen is locked (Win+L).
+- The app is paused.
+- You're in a password manager or a password field.
+
+QUIT / UNINSTALL
+Right-click the icon and choose Quit. Remove it by deleting Squidpal.exe. The
+day files stay in your folder. Settings and counters are in %APPDATA%\Squidpal.
+
+BUG REPORTS
+Say what you did and what happened. Don't send the day files without reading
+through them first.

@@ -1,0 +1,3 @@
+# Security reports must go through the Security tab (private advisory), never a
+# public issue - see SECURITY.md. Blank issues are disabled so the forms are used.
+blank_issues_enabled: false

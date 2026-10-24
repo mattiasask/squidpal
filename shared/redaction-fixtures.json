@@ -1,0 +1,605 @@
+{
+ "_comment": "Shared DayLog redaction fixtures. Generated from the macOS Swift fixtures; every platform must pass all of them.",
+ "redaction": [
+  {
+   "name": "OpenAI key",
+   "input": "my key sk-proj-AbCdEf1234567890GhIjKlMn here",
+   "kind": "api_key",
+   "gone": [
+    "AbCdEf1234567890"
+   ],
+   "kept": [
+    "my key",
+    "here"
+   ]
+  },
+  {
+   "name": "Anthropic key",
+   "input": "export K=sk-ant-api03-Zx9Yw8Vu7Ts6Rq5Po4Nm3Lk2Ji1Hg0Fe",
+   "kind": "api_key",
+   "gone": [
+    "Zx9Yw8Vu7Ts6"
+   ],
+   "kept": []
+  },
+  {
+   "name": "GitHub ghp_",
+   "input": "token ghp_aB3daB3daB3daB3daB3daB3daB3daB3daB3d used",
+   "kind": "github_token",
+   "gone": [
+    "aB3daB3d"
+   ],
+   "kept": [
+    "used"
+   ]
+  },
+  {
+   "name": "GitHub fine-grained",
+   "input": "github_pat_11ABCDEFG11ABCDEFG11ABCDEFG_xyz",
+   "kind": "github_token",
+   "gone": [
+    "11ABCDEFG"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Slack token",
+   "input": "bot: xoxb-1234567890-abcdefghij",
+   "kind": "slack_token",
+   "gone": [
+    "abcdefghij"
+   ],
+   "kept": [
+    "bot:"
+   ]
+  },
+  {
+   "name": "AWS key id",
+   "input": "aws AKIAIOSFODNN7EXAMPLE ok",
+   "kind": "aws_key",
+   "gone": [
+    "IOSFODNN7EXAMPLE"
+   ],
+   "kept": [
+    "ok"
+   ]
+  },
+  {
+   "name": "Google API key",
+   "input": "AIzaAb1_Ab1_Ab1_Ab1_Ab1_Ab1_Ab1_Ab1_Ab1 end",
+   "kind": "google_api_key",
+   "gone": [
+    "Ab1_Ab1_"
+   ],
+   "kept": [
+    "end"
+   ]
+  },
+  {
+   "name": "Stripe secret key",
+   "input": "STRIPE=sk_live_4eC39HqLyjWDarjtT1zdp7dc ok",
+   "kind": "api_key",
+   "gone": [
+    "4eC39HqLyjWDarjtT1zdp7dc"
+   ],
+   "kept": [
+    "ok"
+   ]
+  },
+  {
+   "name": "Stripe restricted key",
+   "input": "rk_test_51HxyzAb12Ab12Ab12Ab12Ab12Ab12",
+   "kind": "api_key",
+   "gone": [
+    "Ab12Ab12"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Stripe webhook secret",
+   "input": "whsec_Zx9Yw8VuZx9Yw8VuZx9Yw8VuZx9Yw8Vu",
+   "kind": "webhook_secret",
+   "gone": [
+    "Zx9Yw8Vu"
+   ],
+   "kept": []
+  },
+  {
+   "name": "GitLab token",
+   "input": "glpat-xY7zW9vU5tS3rQ1pO8nM",
+   "kind": "gitlab_token",
+   "gone": [
+    "xY7zW9vU5"
+   ],
+   "kept": []
+  },
+  {
+   "name": "npm token",
+   "input": "npm_aB3caB3caB3caB3caB3caB3caB3caB3caB3c",
+   "kind": "npm_token",
+   "gone": [
+    "aB3caB3c"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Bearer header",
+   "input": "Authorization: Bearer abc.DEF-123_xyz~456",
+   "kind": "bearer_token",
+   "gone": [
+    "abc.DEF-123_xyz~456"
+   ],
+   "kept": [
+    "Authorization:"
+   ]
+  },
+  {
+   "name": "JWT",
+   "input": "cookie eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.abcDEF123_-xyz",
+   "kind": "jwt",
+   "gone": [
+    "hbGciOiJIUzI1NiJ9"
+   ],
+   "kept": [
+    "cookie"
+   ]
+  },
+  {
+   "name": "PEM RSA",
+   "input": "before\n-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA1234\nabcd\n-----END RSA PRIVATE KEY-----\nafter",
+   "kind": "private_key",
+   "gone": [
+    "MIIEowIBAAKCAQEA1234",
+    "abcd"
+   ],
+   "kept": [
+    "before",
+    "after"
+   ]
+  },
+  {
+   "name": "PEM OpenSSH",
+   "input": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXk\n-----END OPENSSH PRIVATE KEY-----",
+   "kind": "private_key",
+   "gone": [
+    "b3BlbnNzaC1rZXk"
+   ],
+   "kept": []
+  },
+  {
+   "name": "password: value",
+   "input": "user: bob password: hunter2 role: admin",
+   "kind": "secret",
+   "gone": [
+    "hunter2"
+   ],
+   "kept": [
+    "user: bob",
+    "role: admin"
+   ]
+  },
+  {
+   "name": "lösenord=",
+   "input": "lösenord=Sommar2024! klart",
+   "kind": "secret",
+   "gone": [
+    "Sommar2024"
+   ],
+   "kept": [
+    "klart"
+   ]
+  },
+  {
+   "name": "api_key quoted",
+   "input": "api_key = 'abc123def'",
+   "kind": "secret",
+   "gone": [
+    "abc123def"
+   ],
+   "kept": []
+  },
+  {
+   "name": "JSON client_secret",
+   "input": "{\"client_secret\": \"zz9yy8xx\"}",
+   "kind": "secret",
+   "gone": [
+    "zz9yy8xx"
+   ],
+   "kept": []
+  },
+  {
+   "name": "ENV DB_PASSWORD",
+   "input": "DB_PASSWORD=foo42bar",
+   "kind": "secret",
+   "gone": [
+    "foo42bar"
+   ],
+   "kept": []
+  },
+  {
+   "name": "secret_key=",
+   "input": "secret_key=qwe123",
+   "kind": "secret",
+   "gone": [
+    "qwe123"
+   ],
+   "kept": []
+  },
+  {
+   "name": "URL with credentials",
+   "input": "connect https://admin:s3cr3t@db.example.com/x now",
+   "kind": "url_credentials",
+   "gone": [
+    "s3cr3t"
+   ],
+   "kept": [
+    "db.example.com/x",
+    "now"
+   ]
+  },
+  {
+   "name": "OAuth code param",
+   "input": "https://example.com/cb?code=abc123xyz&state=ok",
+   "kind": "url_param",
+   "gone": [
+    "abc123xyz"
+   ],
+   "kept": [
+    "state=ok",
+    "example.com/cb"
+   ]
+  },
+  {
+   "name": "sig param",
+   "input": "https://cdn.example.com/f.png?w=10&sig=XyZ987&x=1",
+   "kind": "url_param",
+   "gone": [
+    "XyZ987"
+   ],
+   "kept": [
+    "w=10",
+    "x=1"
+   ]
+  },
+  {
+   "name": "Card number (Luhn ok)",
+   "input": "Kort 4111 1111 1111 1111 exp 12/27",
+   "kind": "card_number",
+   "gone": [
+    "4111 1111 1111 1111"
+   ],
+   "kept": [
+    "Kort",
+    "exp 12/27"
+   ]
+  },
+  {
+   "name": "Personnummer 12 digits",
+   "input": "pnr 19900101-1239 tack",
+   "kind": "personnummer",
+   "gone": [
+    "19900101-1239"
+   ],
+   "kept": [
+    "pnr",
+    "tack"
+   ]
+  },
+  {
+   "name": "Personnummer 10 digits",
+   "input": "811218-9876",
+   "kind": "personnummer",
+   "gone": [
+    "811218-9876"
+   ],
+   "kept": []
+  },
+  {
+   "name": "OTP sv",
+   "input": "Din verifieringskod är 482913",
+   "kind": "otp",
+   "gone": [
+    "482913"
+   ],
+   "kept": [
+    "Din"
+   ]
+  },
+  {
+   "name": "OTP BankID",
+   "input": "BankID code: 7731",
+   "kind": "otp",
+   "gone": [
+    "7731"
+   ],
+   "kept": []
+  },
+  {
+   "name": "High entropy token",
+   "input": "value Qm9xT2pL8vR4nZ7wK1sY6hB3dF5gJ0cX end",
+   "kind": "high_entropy",
+   "gone": [
+    "Qm9xT2pL8vR4nZ7wK1sY6hB3dF5gJ0cX"
+   ],
+   "kept": [
+    "value",
+    "end"
+   ]
+  },
+  {
+   "name": "High entropy lower+digits",
+   "input": "k=(a8kf3lq9zx2mv7pw4rt6yb1n)",
+   "kind": "high_entropy",
+   "gone": [
+    "a8kf3lq9zx2mv7pw4rt6yb1n"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Plain Swedish text",
+   "input": "Möte med Sam om budgeten imorgon kl 14:00, rum Ö-3.",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "Möte med Sam om budgeten imorgon kl 14:00, rum Ö-3."
+   ]
+  },
+  {
+   "name": "Card failing Luhn",
+   "input": "Ref 4111 1111 1111 1112",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "4111 1111 1111 1112"
+   ]
+  },
+  {
+   "name": "Number without code context",
+   "input": "Order 482913 shipped",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "482913"
+   ]
+  },
+  {
+   "name": "Date and year near 'code'",
+   "input": "Code review 2026-10-13, deadline 2026",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "2026-10-13",
+    "deadline 2026"
+   ]
+  },
+  {
+   "name": "Normal URL",
+   "input": "https://www.linkedin.com/feed/update/urn:li:activity:7251234567890123456/?trk=abcDEF123ghiJKL456",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "linkedin.com/feed"
+   ]
+  },
+  {
+   "name": "Bare domain URL",
+   "input": "linkedin.com/in/alex-example-1a2b3c4d5e6f7g8h",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "linkedin.com/in/"
+   ]
+  },
+  {
+   "name": "File path",
+   "input": "/Users/alex/Projects/acme-backend/src/main2.swift",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "/Users/alex/Projects/acme-backend/src/main2.swift"
+   ]
+  },
+  {
+   "name": "Git hash",
+   "input": "commit 3f786850e387550fdab836ed7e6dc881de23001b",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "3f786850e387550fdab836ed7e6dc881de23001b"
+   ]
+  },
+  {
+   "name": "UUID",
+   "input": "id 550e8400-e29b-41d4-a716-446655440000",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "550e8400-e29b-41d4-a716-446655440000"
+   ]
+  },
+  {
+   "name": "CamelCase identifier",
+   "input": "UIApplicationDidFinishLaunching2 SquidlerFundraisingNotes2026v3",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "UIApplicationDidFinishLaunching2",
+    "SquidlerFundraisingNotes2026v3"
+   ]
+  },
+  {
+   "name": "Long word with digits",
+   "input": "internationalization2024readiness",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "internationalization2024readiness"
+   ]
+  },
+  {
+   "name": "Email address",
+   "input": "alex.longname1234@acme-example.io",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "alex.longname1234@acme-example.io"
+   ]
+  },
+  {
+   "name": "Word 'author' is not 'auth'",
+   "input": "author: Mattias",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "author: Mattias"
+   ]
+  },
+  {
+   "name": "Long numeric ID in URN (passes Luhn)",
+   "input": "urn:li:activity:7251234567890123456",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "7251234567890123456"
+   ]
+  },
+  {
+   "name": "Stripe object ids",
+   "input": "Customer cus_NffrFeUfNV2Hib, payment pi_3PxYzAbCdEf1234567890Gh, session cs_test_a1B2c3D4e5F6g7H8i9J0kLmN",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "cus_NffrFeUfNV2Hib",
+    "pi_3PxYzAbCdEf1234567890Gh",
+    "cs_test_a1B2c3D4e5F6g7H8i9J0kLmN"
+   ]
+  },
+  {
+   "name": "Random-looking id in URL path",
+   "input": "Öppna https://lovable.dev/projects/Qm9xT2pL8vR4nZ7wK1sY6hB3dF5gJ0cX nu",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "Qm9xT2pL8vR4nZ7wK1sY6hB3dF5gJ0cX"
+   ]
+  },
+  {
+   "name": "Gmail thread URL",
+   "input": "https://mail.google.com/mail/u/0/#inbox/FMfcgzQXJWhGkbsDmTrLpqwXcVbNmKjh",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "FMfcgzQXJWhGkbsDmTrLpqwXcVbNmKjh"
+   ]
+  },
+  {
+   "name": "Number far from 'code'",
+   "input": "Source code for the new onboarding flow is merged, see ticket 482913",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "482913"
+   ]
+  },
+  {
+   "name": "Unicode / barcode are not 'code'",
+   "input": "Unicode 15104 och barcode 734512",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "15104",
+    "734512"
+   ]
+  },
+  {
+   "name": "Plural 'codes'",
+   "input": "We shipped 3 promo codes: 8812 redemptions",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "8812"
+   ]
+  },
+  {
+   "name": "OTP after 'passcode'",
+   "input": "Zoom passcode: 551204",
+   "kind": "otp",
+   "gone": [
+    "551204"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Phone number",
+   "input": "Ring 070-123 45 67",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "070-123 45 67"
+   ]
+  },
+  {
+   "name": "Prose about passwords",
+   "input": "Remember to rotate the password policy next week",
+   "kind": null,
+   "gone": [],
+   "kept": [
+    "rotate the password policy"
+   ]
+  }
+ ],
+ "sensitive_field_names": [
+  {
+   "input": "Password",
+   "expected": true
+  },
+  {
+   "input": "Lösenord",
+   "expected": true
+  },
+  {
+   "input": "pinCode",
+   "expected": true
+  },
+  {
+   "input": "PIN-kod",
+   "expected": true
+  },
+  {
+   "input": "cvc",
+   "expected": true
+  },
+  {
+   "input": "Säkerhetskod",
+   "expected": true
+  },
+  {
+   "input": "Enter 2FA code",
+   "expected": true
+  },
+  {
+   "input": "otp_input",
+   "expected": true
+  },
+  {
+   "input": "Email",
+   "expected": false
+  },
+  {
+   "input": "Shipping address",
+   "expected": false
+  },
+  {
+   "input": "Spinner",
+   "expected": false
+  },
+  {
+   "input": "Search or type URL",
+   "expected": false
+  },
+  {
+   "input": "Message Body",
+   "expected": false
+  }
+ ]
+}

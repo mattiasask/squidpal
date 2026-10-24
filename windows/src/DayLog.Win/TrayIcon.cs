@@ -1,0 +1,50 @@
+using System.Drawing;
+using Microsoft.Win32;
+
+namespace DayLog.Win;
+
+/// <summary>
+/// Loads the Squidpal statolith tray icon from the brand .ico files shipped
+/// next to the executable (see the .csproj — tray\*.ico is copied to output).
+/// Three states share the same rings: recording (coral dot), paused (two bars),
+/// warning = "off" / not recording (rings + dot, no coral).
+///
+/// Windows does not tint tray icons, so we pick the glyph colour from the
+/// taskbar theme: SystemUsesLightTheme 0/absent → dark taskbar → light glyph;
+/// 1 → light taskbar → dark glyph.
+/// </summary>
+public static class TrayIcon
+{
+    public enum State { Recording, Paused, Warning }
+
+    public static bool IsLightTaskbar()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("SystemUsesLightTheme") is int v && v != 0;
+        }
+        catch { return false; }
+    }
+
+    static string FileFor(State state)
+    {
+        string name = state switch
+        {
+            State.Recording => "recording",
+            State.Paused => "paused",
+            _ => "off",
+        };
+        string theme = IsLightTaskbar() ? "dark" : "light";
+        return Path.Combine(AppContext.BaseDirectory, "tray", $"tray-{name}-{theme}.ico");
+    }
+
+    /// <summary>Tray icon for a state at the current small-icon DPI size.
+    /// Caller disposes.</summary>
+    public static Icon Load(State state)
+    {
+        using var stream = File.OpenRead(FileFor(state));
+        return new Icon(stream, SystemInformation.SmallIconSize);
+    }
+}

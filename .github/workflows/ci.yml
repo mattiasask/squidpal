@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: macOS (Swift)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Redactor self-test
+        run: cd macos && ./build.sh test
+      - name: Build the app
+        run: cd macos && ./build.sh
+
+  windows:
+    name: Windows (.NET)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Redactor self-test
+        run: dotnet run --project windows/src/DayLog.SelfTest -c Release -- shared/redaction-fixtures.json
+      - name: Build the tray app
+        run: dotnet build windows/src/DayLog.Win -c Release
+
+  linux:
+    name: Linux (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-gi gir1.2-gtk-3.0 gir1.2-atspi-2.0 \
+            python3-pyatspi gir1.2-ayatanaappindicator3-0.1 at-spi2-core python3-regex
+      - name: Redactor self-test
+        run: python3 linux/selftest.py
+      - name: Import check (GUI modules load)
+        run: |
+          cd linux
+          python3 -c "import daylog.app, daylog.recorder, daylog.atspi_reader, daylog.clipboard, daylog.lock; print('import OK')"

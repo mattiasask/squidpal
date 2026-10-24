@@ -1,0 +1,35 @@
+name: Bug report
+description: Something didn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not paste real secrets.** If this is about a secret that leaked into a
+        log file, report it privately via Security instead (see SECURITY.md).
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: OS + version, and desktop environment / display server if Linux
+      placeholder: e.g. macOS 14.5 / Windows 11 23H2 / Ubuntu 24.04 GNOME Wayland
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Steps to reproduce. Describe the *shape* of any sensitive data, never the value.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Error messages or terminal output. Redact anything sensitive.
+      render: shell

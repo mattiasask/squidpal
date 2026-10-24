@@ -1,0 +1,7 @@
+# DayLog for Linux depends on system packages (installed by install.sh), not pip:
+#   python3, python3-gi (PyGObject), python3-pyatspi, at-spi2-core,
+#   gir1.2-atspi-2.0, gir1.2-gtk-3.0, gir1.2-ayatanaappindicator3-0.1,
+#   python3-regex, xdg-utils
+# The only pure-Python dependency is `regex`, shipped as python3-regex (distro)
+# or installed with `pip install --user regex` as a fallback.
+regex

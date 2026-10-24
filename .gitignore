@@ -1,0 +1,24 @@
+# ---- macOS build output
+macos/.build/
+macos/build/
+macos/build_old/
+*.dmg
+.DS_Store
+
+# ---- Windows / .NET build output
+windows/**/bin/
+windows/**/obj/
+windows/dist/
+*.user
+
+# ---- Linux / Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---- editors / misc
+.vscode/
+.idea/
+*.swp
+*~
