@@ -35,7 +35,6 @@ internal sealed class TrayAppContext : ApplicationContext
     DateTime _pauseUntil;
     bool _locked;
     uint _clipboardSeq;
-    DateTime? _scrolledAt;
     DayStats _stats = new(LogWriter.DayString(), 0, 0, 0);
     string? _lastError;
     TrayIcon.State _iconState = TrayIcon.State.Warning;
@@ -84,7 +83,8 @@ internal sealed class TrayAppContext : ApplicationContext
     {
         if (_pauseMode == PauseMode.Until && _pauseUntil <= DateTime.Now) _pauseMode = PauseMode.None;
 
-        var input = new TickInput { Active = IsRecording, Hwnd = Native.GetForegroundWindow(), ScrolledAt = _scrolledAt };
+        // Windows build does not hook global scroll yet; ScrolledAt stays null.
+        var input = new TickInput { Active = IsRecording, Hwnd = Native.GetForegroundWindow(), ScrolledAt = null };
 
         // Clipboard: always advance the marker so nothing copied while paused is
         // written later. Only read text when actively recording and allowed.

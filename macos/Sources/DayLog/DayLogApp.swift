@@ -64,8 +64,14 @@ final class AppState: ObservableObject {
     }
 
     func start() {
-        recorder.onStats = { [weak self] s in Task { @MainActor in self?.stats = s } }
-        recorder.onError = { [weak self] m in Task { @MainActor in self?.lastError = m } }
+        recorder.onStats = { [weak self] s in
+            guard let self else { return }
+            Task { @MainActor in self.stats = s }
+        }
+        recorder.onError = { [weak self] m in
+            guard let self else { return }
+            Task { @MainActor in self.lastError = m }
+        }
 
         trusted = AX.isTrusted(prompt: true)
         restoreFolder()
@@ -73,14 +79,17 @@ final class AppState: ObservableObject {
 
         let dnc = DistributedNotificationCenter.default()
         dnc.addObserver(forName: .init("com.apple.screenIsLocked"), object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.locked = true }
+            guard let self else { return }
+            Task { @MainActor in self.locked = true }
         }
         dnc.addObserver(forName: .init("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.locked = false }
+            guard let self else { return }
+            Task { @MainActor in self.locked = false }
         }
 
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.tick() }
+            guard let self else { return }
+            Task { @MainActor in self.tick() }
         }
     }
 
@@ -115,13 +124,15 @@ final class AppState: ObservableObject {
         }
 
         let rec = recorder
-        rec.queue.async { rec.tick(input) }
+        let snapshot = input
+        rec.queue.async { rec.tick(snapshot) }
     }
 
     private func installScrollMonitor() {
         guard scrollMonitor == nil else { return }
         scrollMonitor = NSEvent.addGlobalMonitorForEvents(matching: .scrollWheel) { [weak self] _ in
-            Task { @MainActor in self?.scrolledAt = Date() }
+            guard let self else { return }
+            Task { @MainActor in self.scrolledAt = Date() }
         }
     }
 
