@@ -61,14 +61,18 @@ Each platform has its own reader for the OS accessibility layer — the same
 technology screen readers use — plus a shared design for redaction and the
 output format:
 
-```
-          ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-  macOS   │ Accessibility│   │              │   │              │
-  Windows │ UI Automation│──▶│  Redactor    │──▶│  JSONL day   │
-  Linux   │   AT-SPI     │   │ (strip secrets)  │   files       │
-          └──────────────┘   └──────────────┘   └──────────────┘
-           read active window   same rules on      one line per
-           text / focus / URL   every platform     event, append-only
+```mermaid
+flowchart LR
+    subgraph R1["Per-platform reader — reads the active window: text, focus, URL"]
+        direction TB
+        M["macOS · Accessibility API"]
+        W["Windows · UI Automation"]
+        L["Linux · AT-SPI"]
+    end
+    M --> RD
+    W --> RD
+    L --> RD
+    RD["Redactor<br/>strip secrets<br/>identical rules on every platform"] --> J["JSONL day files<br/>one line per event · append-only"]
 ```
 
 The **redaction rules are identical across all three platforms** and are tested
