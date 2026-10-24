@@ -72,7 +72,9 @@ public static class Redactor
         "credentialuibroker.exe",           // Windows credential prompt
     };
     static readonly string[] BlockedNameWords =
-        { "1password", "bitwarden", "dashlane", "keepass", "lastpass", "nordpass", "keychain", "nyckelhanteraren" };
+        { "1password", "bitwarden", "dashlane", "keepass", "lastpass", "nordpass", "enpass",
+          "keeper", "roboform", "strongbox", "proton pass", "keychain", "nyckelhanteraren",
+          "gnome-keyring", "seahorse" };
 
     /// <param name="appId">Executable name on Windows (bundle id on macOS).</param>
     public static bool IsBlockedApp(string? appId, string? name)

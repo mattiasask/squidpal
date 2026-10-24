@@ -163,11 +163,13 @@ class AtspiReader:
             role = _role(el)
             if role in _SKIP_SUBTREE_ROLES:
                 continue
-            if role in _TEXT_ROLES:
-                add(_text_of(el) or _name(el))
-            elif role in _INPUT_ROLES:
+            if role in _INPUT_ROLES:
+                # Input fields (incl. ENTRY/TEXT, which are also in _TEXT_ROLES)
+                # must pass the field-level sensitivity check before we read them.
                 if not self.is_sensitive(el, role):
                     add(_text_of(el) or _name(el))
+            elif role in _TEXT_ROLES:
+                add(_text_of(el) or _name(el))
             elif role in _LABELLED_ROLES:
                 add(_name(el))
             n = _safe(lambda: el.childCount, 0) or 0

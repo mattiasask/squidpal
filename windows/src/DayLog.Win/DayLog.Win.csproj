@@ -20,9 +20,8 @@
     <PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="tray\*.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <!-- Embedded so they survive single-file publish; loaded via manifest stream in TrayIcon.cs. -->
+    <EmbeddedResource Include="tray\*.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../DayLog.Core/DayLog.Core.csproj" />

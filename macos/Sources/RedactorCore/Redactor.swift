@@ -83,7 +83,9 @@ public enum Redactor {
         "com.dashlane.Dashlane", "com.apple.Passwords", "com.apple.keychainaccess",
         "com.apple.Passwords-Settings.extension",
     ]
-    static let blockedNameWords = ["1password", "bitwarden", "dashlane", "keychain", "nyckelhanteraren"]
+    static let blockedNameWords = ["1password", "bitwarden", "dashlane", "keepass", "lastpass",
+                                   "nordpass", "enpass", "keeper", "roboform", "strongbox",
+                                   "proton pass", "keychain", "nyckelhanteraren", "gnome-keyring", "seahorse"]
 
     public static func isBlockedApp(bundleID: String?, name: String?) -> Bool {
         if let b = bundleID, blockedBundleIDs.contains(b) || b.lowercased().hasPrefix("com.1password") {

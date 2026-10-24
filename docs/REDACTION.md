@@ -25,7 +25,8 @@ behavior cannot drift between platforms.
    managers mark as secret (macOS `org.nspasteboard.ConcealedType`, KDE
    `x-kde-passwordManagerHint`, …) are dropped.
 3. **Password managers record only the app name.** 1Password, Bitwarden,
-   Dashlane, KeePass, the system keychains, etc. — their window contents are
+   Dashlane, KeePass/KeePassXC, LastPass, NordPass, Enpass, Keeper, RoboForm,
+   Strongbox, Proton Pass, the system keychains, etc. — their window contents are
    never read.
 4. **Pattern rules** mask, wherever they appear in text:
    - Known key formats: OpenAI `sk-…`/`sk-ant-…`, Stripe `sk_live_`/`rk_live_`/

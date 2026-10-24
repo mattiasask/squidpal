@@ -13,6 +13,11 @@
 #   NOTARY_PROFILE=<profile>      also notarize + staple (profile created once with
 #                                 `xcrun notarytool store-credentials <profile>`)
 set -euo pipefail
+
+# The redactor self-test reads the SAME shared fixtures as Windows/Linux, so it
+# cannot silently drift. Resolve them to an absolute path for the test runner.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export SQUIDPAL_FIXTURES="$(cd "$SCRIPT_DIR/.." && pwd)/shared/redaction-fixtures.json"
 cd "$(dirname "$0")"
 
 MODE="${1:-app}"

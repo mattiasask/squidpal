@@ -72,8 +72,9 @@ def is_concealed_clipboard(mime_types) -> bool:
 # ----------------------------------------------------------------- Layer 3
 
 _BLOCKED_NAME_WORDS = [
-    "1password", "bitwarden", "dashlane", "keepass", "keepassxc", "lastpass",
-    "nordpass", "enpass", "keychain", "nyckelhanteraren", "gnome-keyring", "seahorse",
+    "1password", "bitwarden", "dashlane", "keepass", "lastpass", "nordpass",
+    "enpass", "keeper", "roboform", "strongbox", "proton pass",
+    "keychain", "nyckelhanteraren", "gnome-keyring", "seahorse",
 ]
 
 
