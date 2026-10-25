@@ -9,7 +9,7 @@ namespace DayLog.Core;
 public sealed class LineDedup
 {
     const int MaxPerApp = 300_000;
-    readonly Dictionary<string, HashSet<int>> _seen = new();
+    readonly Dictionary<string, HashSet<long>> _seen = new();
 
     public void Reset() => _seen.Clear();
 
@@ -18,7 +18,7 @@ public sealed class LineDedup
     public string? NewLines(string text, string? app)
     {
         var key = app ?? "?";
-        if (!_seen.TryGetValue(key, out var set)) { set = new HashSet<int>(); _seen[key] = set; }
+        if (!_seen.TryGetValue(key, out var set)) { set = new HashSet<long>(); _seen[key] = set; }
         if (set.Count > MaxPerApp) set.Clear();
 
         var kept = new List<string>();
@@ -37,13 +37,16 @@ public sealed class LineDedup
     public static bool LooksLikeOwnLog(string text) =>
         text.Split('\n').Take(3).Any(l => IsOwnLogLine(l.Trim()));
 
-    // Deterministic 32-bit hash (string.GetHashCode is randomized per process).
-    static int StableHash(string s)
+    // Deterministic 64-bit FNV-1a (string.GetHashCode is randomized per process;
+    // 32-bit collides at ~300k lines/app, silently dropping lines).
+    static long StableHash(string s)
     {
         unchecked
         {
-            int h = 17;
-            foreach (var c in s) h = h * 31 + c;
+            const long offset = unchecked((long)14695981039346656037UL);
+            const long prime = 1099511628211L;
+            long h = offset;
+            foreach (var c in s) { h ^= c; h *= prime; }
             return h;
         }
     }

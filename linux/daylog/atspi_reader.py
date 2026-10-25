@@ -17,8 +17,7 @@ _TEXT_ROLES = {
     pyatspi.ROLE_TEXT, pyatspi.ROLE_ENTRY, pyatspi.ROLE_PARAGRAPH, pyatspi.ROLE_STATIC,
     pyatspi.ROLE_LABEL, pyatspi.ROLE_HEADING, pyatspi.ROLE_CAPTION,
 }
-_INPUT_ROLES = {pyatspi.ROLE_ENTRY, pyatspi.ROLE_TEXT, pyatspi.ROLE_PASSWORD_TEXT,
-                pyatspi.ROLE_DOCUMENT_WEB, pyatspi.ROLE_DOCUMENT_FRAME}
+_INPUT_ROLES = {pyatspi.ROLE_ENTRY, pyatspi.ROLE_TEXT, pyatspi.ROLE_PASSWORD_TEXT}
 _LABELLED_ROLES = {
     pyatspi.ROLE_PUSH_BUTTON, pyatspi.ROLE_TOGGLE_BUTTON, pyatspi.ROLE_MENU_ITEM,
     pyatspi.ROLE_CHECK_BOX, pyatspi.ROLE_RADIO_BUTTON, pyatspi.ROLE_LINK,

@@ -26,7 +26,7 @@ internal sealed class UiaReader : IDisposable
     { "chrome.exe", "msedge.exe", "brave.exe", "vivaldi.exe", "opera.exe", "arc.exe", "firefox.exe" };
 
     static readonly HashSet<ControlType> TextInputTypes = new()
-    { ControlType.Edit, ControlType.ComboBox, ControlType.Document };
+    { ControlType.Edit, ControlType.ComboBox };
     static readonly HashSet<ControlType> LabelledTypes = new()
     { ControlType.Button, ControlType.MenuItem, ControlType.CheckBox, ControlType.RadioButton,
       ControlType.TabItem, ControlType.Hyperlink, ControlType.ListItem, ControlType.TreeItem, ControlType.SplitButton };

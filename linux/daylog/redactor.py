@@ -160,7 +160,7 @@ _RULES = [
      r"[?&#;](?:token|key|api_key|apikey|sig|signature|code|access_token|refresh_token|id_token|password|pwd|passwd|secret|client_secret|auth)=([^&#\s\"'<>]+)",
      1, None),
     ("secret",
-     r"(?<![\p{L}\p{N}])(?:password|passwd|pwd|lösenord|losenord|secret|token|api[_\-]?key|apikey|access[_\-]?key|client[_\-]?secret|private[_\-]?key|auth)(?:[_\-][A-Za-z0-9_]*)?(?![\p{L}\p{N}])[\"']?\s*[:=]\s*[\"']?([^\s\"',;\[\]\{\}]+)",
+     r"(?<![\p{L}\p{N}])(?:password|passwd|pwd|lösenord|losenord|secret|token|api[_\-]?key|apikey|access[_\-]?key|client[_\-]?secret|private[_\-]?key|authorization)(?:[_\-][A-Za-z0-9_]*)?(?![\p{L}\p{N}])[\"']?\s*[:=]\s*[\"']?([^\s\"',;\[\]\{\}]+)",
      1, None),
     ("personnummer", r"(?<![0-9\-])((?:19|20)?[0-9]{6}[\-+]?[0-9]{4})(?![0-9])", 1,
      lambda v, m, w: is_personnummer(v)),
@@ -180,7 +180,7 @@ _BARE_DOMAIN = regex.compile(r"^(?:www\.)?[a-z0-9\-]+(?:\.[a-z0-9\-]+)*\.[a-z]{2
 _EMAIL = regex.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
 _HEX_ONLY = regex.compile(r"^[0-9a-fA-F]{7,128}$")
 _UUID = regex.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-_PREFIXED_ID = regex.compile(r"^[a-z]{2,10}(?:_[a-z]{2,8})?_[A-Za-z0-9]{8,}$")
+_PREFIXED_ID = regex.compile(r"^(?:acct|ba|card|ch|cs|cus|evt|il|in|ii|iv|or|pi|pm|po|price|prod|py|re|rcpt|seti|src|sku|sub|tok|trr|txn|we)_(?:[a-z]+_)?[A-Za-z0-9]{8,}$")
 _TRIM = "\"'`()<>[]{},;.:!?"
 ENTROPY_THRESHOLD = 4.0
 
@@ -275,5 +275,10 @@ def redact(text: str) -> RedactionOutput:
                 out = out[:m.start() + lo] + MARKER + "high_entropy]" + out[m.start() + hi:]
                 kinds.append("high_entropy")
         text = out
+
+    # Repair nested markers the entropy pass can produce when it sweeps up the
+    # tail of an earlier marker (e.g. an AKIA id joined to a secret by '/').
+    while MARKER + MARKER in text:
+        text = text.replace(MARKER + MARKER, MARKER)
 
     return RedactionOutput(text, len(kinds), kinds)

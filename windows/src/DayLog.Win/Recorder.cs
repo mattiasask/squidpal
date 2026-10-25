@@ -209,7 +209,7 @@ internal sealed class Recorder : IDisposable
 
         if (UiaReader.IsSensitive(el, type)) { FlushTyping(true); ResetField(); return; }
 
-        bool isInput = type is ControlType.Edit or ControlType.ComboBox or ControlType.Document;
+        bool isInput = type is ControlType.Edit or ControlType.ComboBox;
         string? value = null;
         try { value = el.Patterns.Value.PatternOrDefault?.Value?.ValueOrDefault; } catch { }
 

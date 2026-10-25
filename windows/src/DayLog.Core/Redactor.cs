@@ -123,7 +123,7 @@ public static class Redactor
           @"[?&#;](?:token|key|api_key|apikey|sig|signature|code|access_token|refresh_token|id_token|password|pwd|passwd|secret|client_secret|auth)=([^&#\s""'<>]+)",
           group: 1, ci: true),
         R("secret",
-          @"(?<![\p{L}\p{N}])(?:password|passwd|pwd|lösenord|losenord|secret|token|api[_\-]?key|apikey|access[_\-]?key|client[_\-]?secret|private[_\-]?key|auth)(?:[_\-][A-Za-z0-9_]*)?(?![\p{L}\p{N}])[""']?\s*[:=]\s*[""']?([^\s""',;\[\]\{\}]+)",
+          @"(?<![\p{L}\p{N}])(?:password|passwd|pwd|lösenord|losenord|secret|token|api[_\-]?key|apikey|access[_\-]?key|client[_\-]?secret|private[_\-]?key|authorization)(?:[_\-][A-Za-z0-9_]*)?(?![\p{L}\p{N}])[""']?\s*[:=]\s*[""']?([^\s""',;\[\]\{\}]+)",
           group: 1, ci: true),
         R("personnummer", @"(?<![0-9\-])((?:19|20)?[0-9]{6}[\-+]?[0-9]{4})(?![0-9])", group: 1,
           v: (value, _, _) => IsPersonnummer(value)),
@@ -153,7 +153,7 @@ public static class Redactor
     static readonly Regex Email = new(@"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$", Base);
     static readonly Regex HexOnly = new(@"^[0-9a-fA-F]{7,128}$", Base);
     static readonly Regex Uuid = new(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", Base);
-    static readonly Regex PrefixedId = new(@"^[a-z]{2,10}(?:_[a-z]{2,8})?_[A-Za-z0-9]{8,}$", Base);
+    static readonly Regex PrefixedId = new(@"^(?:acct|ba|card|ch|cs|cus|evt|il|in|ii|iv|or|pi|pm|po|price|prod|py|re|rcpt|seti|src|sku|sub|tok|trr|txn|we)_(?:[a-z]+_)?[A-Za-z0-9]{8,}$", Base);
     static readonly Regex WindowsPath = new(@"^(?:[A-Za-z]:\\|\\\\)", Base);
     const string TrimChars = "\"'`()<>[]{},;.:!?";
     public const double EntropyThreshold = 4.0;
@@ -273,6 +273,9 @@ public static class Redactor
             }
             text = sb.ToString();
         }
+        // Repair nested markers the entropy pass can produce when it sweeps up
+        // the tail of an earlier marker (e.g. an AKIA id joined to a secret by '/').
+        while (text.Contains(Marker + Marker)) text = text.Replace(Marker + Marker, Marker);
         return new(text, kinds.Count, kinds);
     }
 }

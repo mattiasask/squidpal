@@ -546,6 +546,56 @@
    "kept": [
     "rotate the password policy"
    ]
+  },
+  {
+   "name": "Supabase secret key",
+   "input": "token sb_secret_Qm9xT2pL8vR4nZ7wK1sY6hB3dF5gJ0cX here",
+   "kind": "high_entropy",
+   "gone": [
+    "Qm9xT2pL8vR4nZ7w"
+   ],
+   "kept": [
+    "token",
+    "here"
+   ]
+  },
+  {
+   "name": "Notion integration token",
+   "input": "ntn_Zx9Yw8Vu7Ts6Rq5Po4Nm3Lk2Ji1Hg0FeDc4Bb21",
+   "kind": "high_entropy",
+   "gone": [
+    "Zx9Yw8Vu7Ts6"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Figma token",
+   "input": "figd_aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5",
+   "kind": "high_entropy",
+   "gone": [
+    "aB3cD4eF5gH6"
+   ],
+   "kept": []
+  },
+  {
+   "name": "Sentry token",
+   "input": "sntrys_Pq7Rw8Tn2Mk9Lj4Hg5Fd6Sa3Zx1Cv0Bn8Mm77",
+   "kind": "high_entropy",
+   "gone": [
+    "Pq7Rw8Tn2Mk9"
+   ],
+   "kept": []
+  },
+  {
+   "name": "No nested marker on AWS id/secret pair",
+   "input": "AKIAIOSFODNN7EXAMPLE/wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY",
+   "kind": "high_entropy",
+   "gone": [
+    "IOSFODNN7EXAMPLE",
+    "wJalrXUtnFEMI",
+    "[REDACTED:[REDACTED:"
+   ],
+   "kept": []
   }
  ],
  "sensitive_field_names": [

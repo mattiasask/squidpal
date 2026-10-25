@@ -154,7 +154,7 @@ public enum Redactor {
              "[?&#;](?:token|key|api_key|apikey|sig|signature|code|access_token|refresh_token|id_token|password|pwd|passwd|secret|client_secret|auth)=([^&#\\s\"'<>]+)",
              group: 1, options: [.caseInsensitive]),
         Rule("secret",
-             "(?<![\\p{L}\\p{N}])(?:password|passwd|pwd|lösenord|losenord|secret|token|api[_\\-]?key|apikey|access[_\\-]?key|client[_\\-]?secret|private[_\\-]?key|auth)(?:[_\\-][A-Za-z0-9_]*)?(?![\\p{L}\\p{N}])[\"']?\\s*[:=]\\s*[\"']?([^\\s\"',;\\[\\]\\{\\}]+)",
+             "(?<![\\p{L}\\p{N}])(?:password|passwd|pwd|lösenord|losenord|secret|token|api[_\\-]?key|apikey|access[_\\-]?key|client[_\\-]?secret|private[_\\-]?key|authorization)(?:[_\\-][A-Za-z0-9_]*)?(?![\\p{L}\\p{N}])[\"']?\\s*[:=]\\s*[\"']?([^\\s\"',;\\[\\]\\{\\}]+)",
              group: 1, options: [.caseInsensitive]),
         Rule("personnummer", "(?<![\\d\\-])((?:19|20)?\\d{6}[\\-+]?\\d{4})(?!\\d)", group: 1,
              validate: { value, _, _ in Redactor.isPersonnummer(value) }),
@@ -192,7 +192,7 @@ public enum Redactor {
         pattern: "(?:\\b[a-z][a-z0-9+.\\-]*://|\\bwww\\.)[^\\s\"'<>]+", options: [.caseInsensitive])
     /// Object IDs like Stripe's cus_…, pi_…, cs_test_…, price_… . Known
     /// secret prefixes (sk_live_, whsec_, ghp_, …) are already replaced above.
-    static let prefixedID = try! NSRegularExpression(pattern: "^[a-z]{2,10}(?:_[a-z]{2,8})?_[A-Za-z0-9]{8,}$")
+    static let prefixedID = try! NSRegularExpression(pattern: "^(?:acct|ba|card|ch|cs|cus|evt|il|in|ii|iv|or|pi|pm|po|price|prod|py|re|rcpt|seti|src|sku|sub|tok|trr|txn|we)_(?:[a-z]+_)?[A-Za-z0-9]{8,}$")
     static let uuid = try! NSRegularExpression(
         pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
@@ -331,6 +331,12 @@ public enum Redactor {
                 }
             }
             text = out as String
+        }
+
+        // Repair nested markers the entropy pass can produce when it sweeps up
+        // the tail of an earlier marker (e.g. an AKIA id joined to a secret by '/').
+        while text.contains("\(marker)\(marker)") {
+            text = text.replacingOccurrences(of: "\(marker)\(marker)", with: marker)
         }
 
         return RedactionOutput(text: text, count: kinds.count, kinds: kinds)
