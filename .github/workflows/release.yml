@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build a release for (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+      - name: Build universal DMG (ad-hoc signed)
+        run: cd macos && ./build.sh dist
+      - name: Canonical asset name
+        run: |
+          mkdir -p dist
+          cp "$(ls macos/build/Squidpal-*.dmg | head -1)" dist/Squidpal-macOS.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/Squidpal-macOS.dmg
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+      - name: Build self-contained zips
+        shell: pwsh
+        run: cd windows; .\build.ps1 dist
+      - name: Canonical asset names
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory dist -Force | Out-Null
+          Copy-Item (Get-ChildItem windows/dist/Squidpal-*-win-x64.zip  | Select-Object -First 1) dist/Squidpal-Windows-x64.zip
+          Copy-Item (Get-ChildItem windows/dist/Squidpal-*-win-arm64.zip | Select-Object -First 1) dist/Squidpal-Windows-arm64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/*.zip
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+      - name: Package Linux bundle
+        run: |
+          mkdir -p dist
+          tar -czf dist/Squidpal-Linux.tar.gz \
+            linux shared/redaction-fixtures.json docs README.md LICENSE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/Squidpal-Linux.tar.gz
+
+  release:
+    needs: [macos, windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: List assets
+        run: ls -la dist
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          draft: true
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/Squidpal-macOS.dmg
+            dist/Squidpal-Windows-x64.zip
+            dist/Squidpal-Windows-arm64.zip
+            dist/Squidpal-Linux.tar.gz
