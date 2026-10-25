@@ -14,7 +14,7 @@ $sln = "src"
 
 function Check-Dotnet {
     if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-        Write-Error "dotnet hittades inte. Installera .NET 8 SDK från https://dotnet.microsoft.com/download/dotnet/8.0"
+        Write-Error "dotnet not found. Install the .NET 8 SDK from https://dotnet.microsoft.com/download/dotnet/8.0"
     }
 }
 
@@ -43,7 +43,7 @@ switch ($Mode) {
             Copy-Item "$out/$rid/Squidpal.exe" $stage
             Copy-Item "$PSScriptRoot/READ-ME-FIRST.txt" "$stage/READ-ME-FIRST.txt"
             Compress-Archive -Path "$stage/*" -DestinationPath "$out/Squidpal-$ver-$rid.zip" -Force
-            Write-Host "Klart: $out/Squidpal-$ver-$rid.zip"
+            Write-Host "Done: $out/Squidpal-$ver-$rid.zip"
         }
         Write-Host ""
         Write-Host "Skicka win-x64-zippen till de flesta testare. win-arm64 är för Snapdragon/ARM-datorer."

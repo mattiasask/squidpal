@@ -40,17 +40,17 @@ public static class Timeline
         int apps = events.Where(e => !string.IsNullOrEmpty(e.App)).Select(e => e.App).Distinct().Count();
 
         string cards = groups.Count == 0
-            ? "<div class=\"empty\">Inga poster för idag ännu.</div>"
+            ? "<div class=\"empty\">Nothing recorded today yet.</div>"
             : string.Concat(groups.Select(GroupHtml));
 
-        string doc = "<!doctype html><html lang=\"sv\"><head><meta charset=\"utf-8\">"
+        string doc = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             + $"<title>Squidpal — {Esc(day)}</title><style>{Css}</style></head>"
             + "<body><div class=\"wrap\"><header><h1>Squidpal</h1>"
             + $"<div class=\"date\">{Esc(PrettyDate(day))}</div>"
-            + $"<div class=\"sub\">{events.Count} poster · {totalRed} maskeringar · {apps} appar</div>"
+            + $"<div class=\"sub\">{events.Count} entries · {totalRed} redactions · {apps} apps</div>"
             + $"</header><main>{cards}</main>"
-            + $"<footer>Genererad {DateTime.Now:HH:mm} · all data stannar lokalt på din dator</footer>"
+            + $"<footer>Generated {DateTime.Now:HH:mm} · all data stays on your computer</footer>"
             + "</div></body></html>";
 
         try
@@ -118,10 +118,10 @@ public static class Timeline
     {
         var head = new StringBuilder();
         head.Append($"<span class=\"time\">{Hhmm(g.Ts)}</span>");
-        head.Append($"<span class=\"app\">{Esc(g.App ?? "Okänd app")}</span>");
+        head.Append($"<span class=\"app\">{Esc(g.App ?? "Unknown app")}</span>");
         if (!string.IsNullOrEmpty(g.Win)) head.Append($"<span class=\"win\">{Esc(g.Win!)}</span>");
         if (g.Dwell is { } d) head.Append($"<span class=\"dur\">· {FmtDur(d)}</span>");
-        if (g.Red > 0) head.Append($"<span class=\"lock\" title=\"{g.Red} maskeringar i detta block\">🔒</span>");
+        if (g.Red > 0) head.Append($"<span class=\"lock\" title=\"{g.Red} redactions in this block\">🔒</span>");
 
         string urlLine = "";
         if (!string.IsNullOrEmpty(g.Url))
@@ -148,7 +148,7 @@ public static class Timeline
     {
         string escaped = Esc(t.Replace("\r\n", "\n").Replace("\r", "\n"));
         string replaced = RedRe.Replace(escaped,
-            m => $"<span class=\"red\" title=\"dold: {Esc(m.Groups[1].Value)}\">🔒 dold</span>");
+            m => $"<span class=\"red\" title=\"hidden: {Esc(m.Groups[1].Value)}\">🔒 hidden</span>");
         return replaced.Replace("\n", "<br>");
     }
 
@@ -185,11 +185,11 @@ public static class Timeline
 
     static string TagFor(string ev) => ev switch
     {
-        "update" => "uppdaterade",
-        "scroll" => "skrollade",
-        "typing" => "skrev",
-        "selection" => "markerade",
-        "clipboard" => "kopierade",
+        "update" => "updated",
+        "scroll" => "scrolled",
+        "typing" => "typed",
+        "selection" => "selected",
+        "clipboard" => "copied",
         _ => "",
     };
 
@@ -205,11 +205,11 @@ public static class Timeline
         return rm > 0 ? $"{h}t {rm}m" : $"{h}t";
     }
 
-    static readonly string[] WeekdaysSv =
-        { "", "söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag" };
-    static readonly string[] MonthsSv =
-        { "", "januari", "februari", "mars", "april", "maj", "juni",
-          "juli", "augusti", "september", "oktober", "november", "december" };
+    static readonly string[] Weekdays =
+        { "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    static readonly string[] Months =
+        { "", "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December" };
 
     static string PrettyDate(string day)
     {
@@ -220,8 +220,8 @@ public static class Timeline
         try
         {
             var dt = new DateTime(y, mo, d);
-            string wdName = WeekdaysSv[(int)dt.DayOfWeek + 1];       // Sunday=0 -> index 1
-            string moName = (mo >= 1 && mo <= 12) ? MonthsSv[mo] : "";
+            string wdName = Weekdays[(int)dt.DayOfWeek + 1];       // Sunday=0 -> index 1
+            string moName = (mo >= 1 && mo <= 12) ? Months[mo] : "";
             string s = $"{wdName} {d} {moName} {y}";
             return char.ToUpper(s[0]) + s.Substring(1);
         }

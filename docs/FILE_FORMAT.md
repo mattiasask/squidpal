@@ -50,6 +50,17 @@ nothing new aren't written at all. This memory resets at midnight, when you
 change the folder, when you delete the day's file, and on restart (after a
 restart, everything is written once more).
 
+## Text prefixes
+
+Within `text`, lines read from parts of the active app other than its main
+content are tagged with a prefix so an assistant can tell them apart:
+
+- `[menu] …` — the app's menu-bar titles (macOS).
+- `[window] …` — window-chrome / toolbar text around the main content (macOS).
+
+Lines with no prefix are the window's own content. These prefixes are in
+English on every platform.
+
 ## Self-recording is excluded
 
 A window that is showing one of Squidpal's own day files (the filename appears in

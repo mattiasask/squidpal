@@ -130,8 +130,8 @@ internal sealed class TrayAppContext : ApplicationContext
     {
         using var dlg = new FolderBrowserDialog
         {
-            Description = "Välj mapp där Squidpal sparar dagsfilerna (ÅÅÅÅ-MM-DD.jsonl). " +
-                          "Välj en synkad mapp om du vill ha dem i OneDrive/Drive/Dropbox.",
+            Description = "Choose a folder where Squidpal saves the day files (YYYY-MM-DD.jsonl). " +
+                          "Pick a synced folder if you want them in OneDrive/Drive/Dropbox.",
             UseDescriptionForTitle = true,
             ShowNewFolderButton = true,
         };
@@ -152,44 +152,44 @@ internal sealed class TrayAppContext : ApplicationContext
         m.Items.Add(new ToolStripMenuItem(StatusLine()) { Enabled = false });
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem(
-            $"Idag: {_stats.Entries} poster · {_stats.Redactions} maskeringar") { Enabled = false });
+            $"Today: {_stats.Entries} entries · {_stats.Redactions} redactions") { Enabled = false });
         m.Items.Add(new ToolStripMenuItem(
-            "Filstorlek: " + BytesText(_stats.Bytes)) { Enabled = false });
+            "File size: " + BytesText(_stats.Bytes)) { Enabled = false });
         if (_lastError != null) m.Items.Add(new ToolStripMenuItem(_lastError) { Enabled = false });
         m.Items.Add(new ToolStripSeparator());
 
         if (IsPaused)
-            m.Items.Add(new ToolStripMenuItem("Slå på inspelning", null, (_, _) => { _pauseMode = PauseMode.None; RefreshIcon(); }));
+            m.Items.Add(new ToolStripMenuItem("Resume recording", null, (_, _) => { _pauseMode = PauseMode.None; RefreshIcon(); }));
         else
         {
-            var pause = new ToolStripMenuItem("Pausa");
-            pause.DropDownItems.Add(new ToolStripMenuItem("15 minuter", null, (_, _) => PauseFor(15)));
-            pause.DropDownItems.Add(new ToolStripMenuItem("1 timme", null, (_, _) => PauseFor(60)));
-            pause.DropDownItems.Add(new ToolStripMenuItem("Tills jag slår på igen", null, (_, _) => PauseIndef()));
+            var pause = new ToolStripMenuItem("Pause");
+            pause.DropDownItems.Add(new ToolStripMenuItem("15 minutes", null, (_, _) => PauseFor(15)));
+            pause.DropDownItems.Add(new ToolStripMenuItem("1 hour", null, (_, _) => PauseFor(60)));
+            pause.DropDownItems.Add(new ToolStripMenuItem("Until I turn it back on", null, (_, _) => PauseIndef()));
             m.Items.Add(pause);
         }
         m.Items.Add(new ToolStripSeparator());
-        m.Items.Add(new ToolStripMenuItem("Visa dagens tidslinje", null, (_, _) => ShowTimeline()));
-        m.Items.Add(new ToolStripMenuItem("Öppna dagens fil", null, (_, _) => OpenToday()));
-        m.Items.Add(new ToolStripMenuItem("Visa mappen", null, (_, _) => RevealFolder()));
-        m.Items.Add(new ToolStripMenuItem("Radera dagens fil…", null, (_, _) => DeleteToday()));
-        m.Items.Add(new ToolStripMenuItem(_folder == null ? "Välj mapp…" : "Byt mapp…", null, (_, _) => ChooseFolder()));
+        m.Items.Add(new ToolStripMenuItem("Show today's timeline", null, (_, _) => ShowTimeline()));
+        m.Items.Add(new ToolStripMenuItem("Open today's file", null, (_, _) => OpenToday()));
+        m.Items.Add(new ToolStripMenuItem("Show folder", null, (_, _) => RevealFolder()));
+        m.Items.Add(new ToolStripMenuItem("Delete today's file…", null, (_, _) => DeleteToday()));
+        m.Items.Add(new ToolStripMenuItem(_folder == null ? "Choose folder…" : "Change folder…", null, (_, _) => ChooseFolder()));
         if (_folder != null) m.Items.Add(new ToolStripMenuItem(_folder) { Enabled = false });
         m.Items.Add(new ToolStripSeparator());
-        m.Items.Add(new ToolStripMenuItem("Avsluta Squidpal", null, (_, _) => ExitApp()));
+        m.Items.Add(new ToolStripMenuItem("Quit Squidpal", null, (_, _) => ExitApp()));
     }
 
     void UpdateMenu() { if (_tray.ContextMenuStrip!.Visible) BuildMenu(); }
 
     string StatusLine()
     {
-        if (_folder == null) return "⚠ Ingen mapp vald – spelar inte in";
-        if (_locked) return "Skärmen är låst – spelar inte in";
+        if (_folder == null) return "⚠ No folder chosen — not recording";
+        if (_locked) return "Screen is locked — not recording";
         return _pauseMode switch
         {
-            PauseMode.Indefinite => "⏸ Pausad tills du slår på igen",
-            PauseMode.Until when _pauseUntil > DateTime.Now => $"⏸ Pausad till {_pauseUntil:HH:mm}",
-            _ => "● Spelar in",
+            PauseMode.Indefinite => "⏸ Paused until you turn it back on",
+            PauseMode.Until when _pauseUntil > DateTime.Now => $"⏸ Paused until {_pauseUntil:HH:mm}",
+            _ => "● Recording",
         };
     }
 
@@ -222,7 +222,7 @@ internal sealed class TrayAppContext : ApplicationContext
 
     void DeleteToday()
     {
-        if (MessageBox.Show("Alla poster från idag tas bort permanent från mappen.", "Radera dagens fil?",
+        if (MessageBox.Show("All of today's entries will be permanently removed from the folder.", "Delete today's file?",
             MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             _recorder.Enqueue(_recorder.DeleteToday);
     }
@@ -247,9 +247,9 @@ internal sealed class TrayAppContext : ApplicationContext
         _tray.Icon = icon;
         _tray.Text = state switch
         {
-            TrayIcon.State.Recording => "Squidpal – spelar in",
-            TrayIcon.State.Paused => "Squidpal – pausad",
-            _ => "Squidpal – ingen mapp vald",
+            TrayIcon.State.Recording => "Squidpal — recording",
+            TrayIcon.State.Paused => "Squidpal — paused",
+            _ => "Squidpal — no folder chosen",
         };
         old?.Dispose();
     }

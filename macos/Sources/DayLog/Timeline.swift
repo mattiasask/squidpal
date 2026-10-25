@@ -14,17 +14,17 @@ enum Timeline {
         let apps = Set(events.compactMap { strOrNil($0["app"]) }).count
 
         let cards = groups.isEmpty
-            ? "<div class=\"empty\">Inga poster för idag ännu.</div>"
+            ? "<div class=\"empty\">Nothing recorded today yet.</div>"
             : groups.map { groupHTML($0) }.joined()
 
-        let doc = "<!doctype html><html lang=\"sv\"><head><meta charset=\"utf-8\">"
+        let doc = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             + "<title>Squidpal — \(esc(day))</title><style>\(css)</style></head>"
             + "<body><div class=\"wrap\"><header><h1>Squidpal</h1>"
             + "<div class=\"date\">\(esc(prettyDate(day)))</div>"
-            + "<div class=\"sub\">\(events.count) poster · \(totalRed) maskeringar · \(apps) appar</div>"
+            + "<div class=\"sub\">\(events.count) entries · \(totalRed) redactions · \(apps) apps</div>"
             + "</header><main>\(cards)</main>"
-            + "<footer>Genererad \(hm(Date())) · all data stannar lokalt på din dator</footer>"
+            + "<footer>Generated \(hm(Date())) · all data stays on your computer</footer>"
             + "</div></body></html>"
 
         let url = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -90,10 +90,10 @@ enum Timeline {
 
     private static func groupHTML(_ g: Group) -> String {
         var head = "<span class=\"time\">\(hhmm(g.ts))</span>"
-            + "<span class=\"app\">\(esc(g.app ?? "Okänd app"))</span>"
+            + "<span class=\"app\">\(esc(g.app ?? "Unknown app"))</span>"
         if let win = g.win, !win.isEmpty { head += "<span class=\"win\">\(esc(win))</span>" }
         if let d = g.dwell { head += "<span class=\"dur\">· \(fmtDur(d))</span>" }
-        if g.red > 0 { head += "<span class=\"lock\" title=\"\(g.red) maskeringar i detta block\">🔒</span>" }
+        if g.red > 0 { head += "<span class=\"lock\" title=\"\(g.red) redactions in this block\">🔒</span>" }
 
         var urlLine = ""
         if let u = g.url, !u.isEmpty {
@@ -127,7 +127,7 @@ enum Timeline {
             for m in matches {
                 out += ns.substring(with: NSRange(location: last, length: m.range.location - last))
                 let kind = ns.substring(with: m.range(at: 1))
-                out += "<span class=\"red\" title=\"dold: \(esc(kind))\">🔒 dold</span>"
+                out += "<span class=\"red\" title=\"hidden: \(esc(kind))\">🔒 hidden</span>"
                 last = m.range.location + m.range.length
             }
             out += ns.substring(from: last)
@@ -164,20 +164,20 @@ enum Timeline {
 
     private static func tagFor(_ event: String) -> String {
         switch event {
-        case "update": return "uppdaterade"
-        case "scroll": return "skrollade"
-        case "typing": return "skrev"
-        case "selection": return "markerade"
-        case "clipboard": return "kopierade"
+        case "update": return "updated"
+        case "scroll": return "scrolled"
+        case "typing": return "typed"
+        case "selection": return "selected"
+        case "clipboard": return "copied"
         default: return ""
         }
     }
 
     // MARK: Dates
 
-    private static let weekdaysSv = ["", "söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"]
-    private static let monthsSv = ["", "januari", "februari", "mars", "april", "maj", "juni",
-                                   "juli", "augusti", "september", "oktober", "november", "december"]
+    private static let weekdays = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    private static let months = ["", "January", "February", "March", "April", "May", "June",
+                                 "July", "August", "September", "October", "November", "December"]
 
     private static func hhmm(_ ts: String) -> String {
         guard ts.count >= 16 else { return ts }
@@ -207,8 +207,8 @@ enum Timeline {
         var c = DateComponents(); c.year = p[0]; c.month = p[1]; c.day = p[2]
         guard let d = cal.date(from: c) else { return day }
         let wd = cal.component(.weekday, from: d)
-        let wdName = (1...7).contains(wd) ? weekdaysSv[wd] : ""
-        let moName = (1...12).contains(p[1]) ? monthsSv[p[1]] : ""
+        let wdName = (1...7).contains(wd) ? weekdays[wd] : ""
+        let moName = (1...12).contains(p[1]) ? months[p[1]] : ""
         let s = "\(wdName) \(p[2]) \(moName) \(p[0])"
         return s.prefix(1).uppercased() + s.dropFirst()
     }

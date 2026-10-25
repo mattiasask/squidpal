@@ -145,11 +145,11 @@ final class Recorder: @unchecked Sendable {
             if !textless, let w = window {
                 let snap = AXReader.windowText(webArea ?? w)
                 var parts: [String] = []
-                if let menus = AXReader.menuTitles(app: appEl) { parts.append("[meny] " + menus) }
+                if let menus = AXReader.menuTitles(app: appEl) { parts.append("[menu] " + menus) }
                 if webArea != nil {
                     // Browser chrome (tabs, toolbar) lives outside the web area.
                     let chrome = AXReader.windowText(w, timeBudget: 1, nodeBudget: 3000).text
-                    if !chrome.isEmpty { parts.append("[fönster] " + String(chrome.prefix(4000))) }
+                    if !chrome.isEmpty { parts.append("[window] " + String(chrome.prefix(4000))) }
                 }
                 parts.append(snap.text)
                 text = newLines(parts.joined(separator: "\n"), app: ctx.bundleID)

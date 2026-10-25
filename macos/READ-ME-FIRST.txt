@@ -37,7 +37,8 @@ current page's address. You can decline.
 
 IN THE MENU
 - Pause: 15 minutes, 1 hour, or until you turn it back on.
-- Open today's file, show the folder, delete today's file, change folder.
+- Show today's timeline (a readable view of the day), open today's file,
+  show the folder, delete today's file, change folder.
 - Number of records, number of redactions, and file size today.
 
 NEW VERSION

@@ -133,8 +133,8 @@ class DayLogApp:
 
     def _choose_folder(self):
         dlg = Gtk.FileChooserDialog(
-            title="Välj mapp för Squidpal", action=Gtk.FileChooserAction.SELECT_FOLDER)
-        dlg.add_buttons("Avbryt", Gtk.ResponseType.CANCEL, "Välj", Gtk.ResponseType.OK)
+            title="Choose a folder for Squidpal", action=Gtk.FileChooserAction.SELECT_FOLDER)
+        dlg.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Choose", Gtk.ResponseType.OK)
         dlg.set_current_folder(os.path.expanduser("~"))
         if dlg.run() == Gtk.ResponseType.OK:
             path = dlg.get_filename()
@@ -149,15 +149,15 @@ class DayLogApp:
 
     def _status_line(self):
         if self.folder is None:
-            return "⚠ Ingen mapp vald – spelar inte in"
+            return "⚠ No folder chosen — not recording"
         if self.lock.locked:
-            return "Skärmen är låst – spelar inte in"
+            return "Screen is locked — not recording"
         if self.pause_mode == "indefinite":
-            return "⏸ Pausad tills du slår på igen"
+            return "⏸ Paused until you turn it back on"
         if self.pause_mode == "until" and self.pause_until > time.monotonic():
             mins = int((self.pause_until - time.monotonic()) / 60) + 1
-            return f"⏸ Pausad (~{mins} min kvar)"
-        return "● Spelar in"
+            return f"⏸ Paused (~{mins} min left)"
+        return "● Recording"
 
     def _rebuild_menu(self):
         for child in self.menu.get_children():
@@ -173,18 +173,18 @@ class DayLogApp:
 
         item(self._status_line(), enabled=False)
         self.menu.append(Gtk.SeparatorMenuItem())
-        item(f"Idag: {self.stats.entries} poster · {self.stats.redactions} maskeringar", enabled=False)
-        item("Filstorlek: " + _bytes(self.stats.bytes), enabled=False)
+        item(f"Today: {self.stats.entries} entries · {self.stats.redactions} redactions", enabled=False)
+        item("File size: " + _bytes(self.stats.bytes), enabled=False)
         if self.last_error:
             item(self.last_error, enabled=False)
         self.menu.append(Gtk.SeparatorMenuItem())
 
         if self.is_paused:
-            item("Slå på inspelning", lambda _: self._resume())
+            item("Resume recording", lambda _: self._resume())
         else:
-            pause = Gtk.MenuItem(label="Pausa")
+            pause = Gtk.MenuItem(label="Pause")
             sub = Gtk.Menu()
-            for label, mins in (("15 minuter", 15), ("1 timme", 60), ("Tills jag slår på igen", None)):
+            for label, mins in (("15 minutes", 15), ("1 hour", 60), ("Until I turn it back on", None)):
                 mi = Gtk.MenuItem(label=label)
                 mi.connect("activate", lambda _w, m=mins: self._pause(m))
                 sub.append(mi)
@@ -192,15 +192,15 @@ class DayLogApp:
             self.menu.append(pause)
 
         self.menu.append(Gtk.SeparatorMenuItem())
-        item("Visa dagens tidslinje", lambda _: self._show_timeline())
-        item("Öppna dagens fil", lambda _: self._open_today())
-        item("Visa mappen", lambda _: self._reveal())
-        item("Radera dagens fil…", lambda _: self._delete_today())
-        item("Välj mapp…" if self.folder is None else "Byt mapp…", lambda _: self._choose_folder())
+        item("Show today's timeline", lambda _: self._show_timeline())
+        item("Open today's file", lambda _: self._open_today())
+        item("Show folder", lambda _: self._reveal())
+        item("Delete today's file…", lambda _: self._delete_today())
+        item("Choose folder…" if self.folder is None else "Change folder…", lambda _: self._choose_folder())
         if self.folder:
             item(self.folder, enabled=False)
         self.menu.append(Gtk.SeparatorMenuItem())
-        item("Avsluta Squidpal", lambda _: self._quit())
+        item("Quit Squidpal", lambda _: self._quit())
         self.menu.show_all()
 
     def _pause(self, minutes):
@@ -242,8 +242,8 @@ class DayLogApp:
     def _delete_today(self):
         dlg = Gtk.MessageDialog(
             message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.OK_CANCEL,
-            text="Radera dagens fil?")
-        dlg.format_secondary_text("Alla poster från idag tas bort permanent från mappen.")
+            text="Delete today's file?")
+        dlg.format_secondary_text("All of today's entries will be permanently removed from the folder.")
         resp = dlg.run()
         dlg.destroy()
         if resp == Gtk.ResponseType.OK:
@@ -255,8 +255,8 @@ class DayLogApp:
         if self.indicator is None:
             return
         state = "squidpal-recording" if self.is_recording else ("squidpal-off" if self.folder is None else "squidpal-paused")
-        desc = {"squidpal-recording": "spelar in", "squidpal-paused": "pausad", "squidpal-off": "ingen mapp vald"}[state]
-        self.indicator.set_icon_full(state, "Squidpal – " + desc)
+        desc = {"squidpal-recording": "recording", "squidpal-paused": "paused", "squidpal-off": "no folder chosen"}[state]
+        self.indicator.set_icon_full(state, "Squidpal — " + desc)
 
     def _quit(self):
         try:

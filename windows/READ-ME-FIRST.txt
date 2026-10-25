@@ -36,7 +36,8 @@ while the browser turns on its accessibility mode. That's normal.
 
 IN THE MENU (right-click the icon)
 - Pause: 15 minutes, 1 hour, or until you turn it back on.
-- Open today's file, show the folder, delete today's file, change folder.
+- Show today's timeline (a readable view of the day), open today's file,
+  show the folder, delete today's file, change folder.
 - Number of records, number of redactions, and file size today.
 
 START WITH WINDOWS (optional)

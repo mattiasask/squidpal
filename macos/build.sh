@@ -31,10 +31,10 @@ if [ -z "${SDKROOT:-}" ]; then
   if [ "$SWIFT_MAJOR" = "5" ] && [[ "$(basename "$SDKROOT")" =~ ^MacOSX(1[5-9]|2[0-9]) ]]; then
     ALT="$(ls -d "$(dirname "$SDKROOT")"/MacOSX14*.sdk 2>/dev/null | sort -V | tail -1 || true)"
     if [ -z "$ALT" ]; then
-      echo "FEL: Swift 5 passar inte $(basename "$SDKROOT") och ingen MacOSX14-SDK finns. Se README → Felsökning."
+      echo "ERROR: Swift 5 does not match $(basename "$SDKROOT") and no MacOSX14 SDK is present. See README -> Troubleshooting."
       exit 1
     fi
-    echo "Swift 5 + $(basename "$SDKROOT") passar inte ihop – använder $(basename "$ALT")"
+    echo "Swift 5 + $(basename "$SDKROOT") mismatch - using $(basename "$ALT")"
     SDKROOT="$ALT"
   fi
 fi
@@ -108,8 +108,8 @@ case "$MODE" in
     assemble_app "build/obj/$NATIVE/DayLog"
     sign_app
     echo
-    echo "Klart: $PWD/build/Squidpal.app"
-    echo "Starta: open build/Squidpal.app   (avsluta en körande Squidpal först)"
+    echo "Done: $PWD/build/Squidpal.app"
+    echo "Run: open build/Squidpal.app   (quit a running Squidpal first)"
     ;;
 
   dist)
@@ -134,18 +134,18 @@ case "$MODE" in
     if [ -n "${DEVELOPER_ID:-}" ]; then
       codesign --force --timestamp --sign "$DEVELOPER_ID" "$DMG"
       if [ -n "${NOTARY_PROFILE:-}" ]; then
-        echo "→ Notariserar (tar några minuter)"
+        echo "-> Notarizing (takes a few minutes)"
         xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait
         xcrun stapler staple "$DMG"
       fi
     fi
     echo
-    echo "Klart: $PWD/$DMG"
+    echo "Done: $PWD/$DMG"
     if [ -z "${DEVELOPER_ID:-}" ]; then
-      echo "Ad hoc-signerad: testaren måste godkänna appen en gång (see 'READ-ME-FIRST.txt' in the DMG)."
+      echo "Ad-hoc signed: the tester must approve the app once (see 'READ-ME-FIRST.txt' in the DMG)."
     fi
     ;;
 
   *)
-    echo "Okänt läge: $MODE (använd: test, dist eller inget)"; exit 1 ;;
+    echo "Unknown mode: $MODE (use: test, dist, or nothing)"; exit 1 ;;
 esac

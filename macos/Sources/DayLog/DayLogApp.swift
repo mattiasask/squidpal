@@ -141,9 +141,9 @@ final class AppState: ObservableObject {
     func chooseFolder() {
         NSApp.activate(ignoringOtherApps: true)
         let panel = NSOpenPanel()
-        panel.title = "Välj mapp för Squidpal"
-        panel.message = "Dagsfilerna (ÅÅÅÅ-MM-DD.jsonl) sparas här. Välj en synkad mapp om du vill ha dem i Drive/Dropbox/iCloud."
-        panel.prompt = "Välj"
+        panel.title = "Choose a folder for Squidpal"
+        panel.message = "Day files (YYYY-MM-DD.jsonl) are saved here. Pick a synced folder if you want them in Drive/Dropbox/iCloud."
+        panel.prompt = "Choose"
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
@@ -216,10 +216,10 @@ final class AppState: ObservableObject {
     func deleteToday() {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = "Radera dagens fil?"
-        alert.informativeText = "Alla poster från idag tas bort permanent från mappen."
-        alert.addButton(withTitle: "Radera")
-        alert.addButton(withTitle: "Avbryt")
+        alert.messageText = "Delete today's file?"
+        alert.informativeText = "All of today's entries will be permanently removed from the folder."
+        alert.addButton(withTitle: "Delete")
+        alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .warning
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let rec = recorder
@@ -254,44 +254,44 @@ struct MenuContent: View {
     @ObservedObject var state: AppState
 
     var statusLine: String {
-        if state.folder == nil { return "⚠︎ Ingen mapp vald – spelar inte in" }
-        if !state.trusted { return "⚠︎ Tillgänglighetstillstånd saknas – spelar inte in" }
-        if state.locked { return "Skärmen är låst – spelar inte in" }
+        if state.folder == nil { return "⚠︎ No folder chosen — not recording" }
+        if !state.trusted { return "⚠︎ Accessibility permission missing — not recording" }
+        if state.locked { return "Screen is locked — not recording" }
         switch state.pause {
-        case .indefinitely: return "⏸ Pausad tills du slår på igen"
+        case .indefinitely: return "⏸ Paused until you turn it back on"
         case .until(let d) where d > Date():
-            return "⏸ Pausad till \(d.formatted(date: .omitted, time: .shortened))"
-        default: return "● Spelar in"
+            return "⏸ Paused until \(d.formatted(date: .omitted, time: .shortened))"
+        default: return "● Recording"
         }
     }
 
     var body: some View {
         Text(statusLine)
         Divider()
-        Text("Idag: \(state.stats.entries) poster · \(state.stats.redactions) maskeringar")
-        Text("Filstorlek: \(ByteCountFormatter.string(fromByteCount: Int64(state.stats.bytes), countStyle: .file))")
+        Text("Today: \(state.stats.entries) entries · \(state.stats.redactions) redactions")
+        Text("File size: \(ByteCountFormatter.string(fromByteCount: Int64(state.stats.bytes), countStyle: .file))")
         if let err = state.lastError { Text(err) }
         Divider()
         if state.isPaused {
-            Button("Slå på inspelning") { state.resume() }
+            Button("Resume recording") { state.resume() }
         } else {
-            Menu("Pausa") {
-                Button("15 minuter") { state.pauseRecording(minutes: 15) }
-                Button("1 timme") { state.pauseRecording(minutes: 60) }
-                Button("Tills jag slår på igen") { state.pauseRecording(minutes: nil) }
+            Menu("Pause") {
+                Button("15 minutes") { state.pauseRecording(minutes: 15) }
+                Button("1 hour") { state.pauseRecording(minutes: 60) }
+                Button("Until I turn it back on") { state.pauseRecording(minutes: nil) }
             }
         }
         if !state.trusted {
-            Button("Ge tillgänglighetstillstånd…") { state.openAccessibilitySettings() }
+            Button("Grant Accessibility permission…") { state.openAccessibilitySettings() }
         }
         Divider()
-        Button("Visa dagens tidslinje") { state.showTimeline() }
-        Button("Öppna dagens fil") { state.openToday() }
-        Button("Visa mappen i Finder") { state.revealFolder() }
-        Button("Radera dagens fil…") { state.deleteToday() }
-        Button(state.folder == nil ? "Välj mapp…" : "Byt mapp…") { state.chooseFolder() }
+        Button("Show today's timeline") { state.showTimeline() }
+        Button("Open today's file") { state.openToday() }
+        Button("Show in Finder") { state.revealFolder() }
+        Button("Delete today's file…") { state.deleteToday() }
+        Button(state.folder == nil ? "Choose folder…" : "Change folder…") { state.chooseFolder() }
         if let f = state.folder { Text(f.path).font(.caption) }
         Divider()
-        Button("Avsluta Squidpal") { NSApp.terminate(nil) }
+        Button("Quit Squidpal") { NSApp.terminate(nil) }
     }
 }

@@ -14,11 +14,11 @@ import tempfile
 from datetime import datetime, date
 
 _RED = re.compile(r"\[REDACTED:([^\]]+)\]")
-_TAGS = {"update": "uppdaterade", "scroll": "skrollade",
-         "typing": "skrev", "selection": "markerade", "clipboard": "kopierade"}
-_WEEKDAYS = ["måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag"]
-_MONTHS = ["", "januari", "februari", "mars", "april", "maj", "juni", "juli",
-           "augusti", "september", "oktober", "november", "december"]
+_TAGS = {"update": "updated", "scroll": "scrolled",
+         "typing": "typed", "selection": "selected", "clipboard": "copied"}
+_WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+_MONTHS = ["", "January", "February", "March", "April", "May", "June", "July",
+           "August", "September", "October", "November", "December"]
 
 
 def _fmt_dur(sec):
@@ -51,7 +51,7 @@ def _pretty_date(day):
 def _text_html(t):
     esc = _html.escape(t, quote=False)
     return _RED.sub(
-        lambda m: f'<span class="red" title="dold: {_html.escape(m.group(1))}">🔒 dold</span>',
+        lambda m: f'<span class="red" title="hidden: {_html.escape(m.group(1))}">🔒 hidden</span>',
         esc).replace("\n", "<br>")
 
 
@@ -92,7 +92,7 @@ def _group(events):
 
 
 def _group_html(g):
-    app = _html.escape(g["app"] or "Okänd app")
+    app = _html.escape(g["app"] or "Unknown app")
     win = _html.escape(g["win"] or "")
     head = [f'<span class="time">{_hhmm(g["ts"])}</span>',
             f'<span class="app">{app}</span>']
@@ -101,7 +101,7 @@ def _group_html(g):
     if g["dwell"]:
         head.append(f'<span class="dur">· {_fmt_dur(g["dwell"])}</span>')
     if g["red"]:
-        head.append(f'<span class="lock" title="{g["red"]} maskeringar i detta block">🔒</span>')
+        head.append(f'<span class="lock" title="{g["red"]} redactions in this block">🔒</span>')
 
     url_line = ""
     if g["url"]:
@@ -168,17 +168,17 @@ def build_timeline(files, day, out_dir=None):
     if groups:
         cards = "".join(_group_html(g) for g in groups)
     else:
-        cards = '<div class="empty">Inga poster för idag ännu.</div>'
+        cards = '<div class="empty">Nothing recorded today yet.</div>'
 
     gen = datetime.now().strftime("%H:%M")
-    doc = (f'<!doctype html><html lang="sv"><head><meta charset="utf-8">'
+    doc = (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
            f'<meta name="viewport" content="width=device-width,initial-scale=1">'
            f'<title>Squidpal — {_html.escape(day)}</title><style>{_CSS}</style></head>'
            f'<body><div class="wrap"><header><h1>Squidpal</h1>'
            f'<div class="date">{_html.escape(_pretty_date(day))}</div>'
-           f'<div class="sub">{len(events)} poster · {total_red} maskeringar · {apps} appar</div>'
+           f'<div class="sub">{len(events)} entries · {total_red} redactions · {apps} apps</div>'
            f'</header><main>{cards}</main>'
-           f'<footer>Genererad {gen} · all data stannar lokalt på din dator</footer>'
+           f'<footer>Generated {gen} · all data stays on your computer</footer>'
            f'</div></body></html>')
 
     out_dir = out_dir or tempfile.gettempdir()

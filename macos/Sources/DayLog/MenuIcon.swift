@@ -22,9 +22,9 @@ enum MenuIcon {
         if let img = cache[state] { return img }
         let (resource, template, label): (String, Bool, String) = {
             switch state {
-            case .recording: return ("StatusOnColor", false, "Squidpal spelar in")
-            case .paused:    return ("StatusPaused", true, "Squidpal är pausad")
-            case .warning:   return ("StatusOff", true, "Squidpal spelar inte in")
+            case .recording: return ("StatusOnColor", false, "Squidpal is recording")
+            case .paused:    return ("StatusPaused", true, "Squidpal is paused")
+            case .warning:   return ("StatusOff", true, "Squidpal is not recording")
             }
         }()
         let img = load(resource) ?? fallback(state)
