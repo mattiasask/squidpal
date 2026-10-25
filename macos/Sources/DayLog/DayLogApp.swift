@@ -189,6 +189,15 @@ final class AppState: ObservableObject {
 
     func resume() { pause = .none }
 
+    func showTimeline() {
+        guard let folder else { return }
+        let files = LogWriter.dayFiles(folder: folder, day: LogWriter.dayString())
+        guard !files.isEmpty else { return }
+        if let url = Timeline.build(files: files, day: LogWriter.dayString()) {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     func openToday() {
         guard let folder,
               let url = LogWriter.dayFiles(folder: folder, day: LogWriter.dayString()).last else { return }
@@ -276,6 +285,7 @@ struct MenuContent: View {
             Button("Ge tillgänglighetstillstånd…") { state.openAccessibilitySettings() }
         }
         Divider()
+        Button("Visa dagens tidslinje") { state.showTimeline() }
         Button("Öppna dagens fil") { state.openToday() }
         Button("Visa mappen i Finder") { state.revealFolder() }
         Button("Radera dagens fil…") { state.deleteToday() }

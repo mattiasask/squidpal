@@ -192,6 +192,7 @@ class DayLogApp:
             self.menu.append(pause)
 
         self.menu.append(Gtk.SeparatorMenuItem())
+        item("Visa dagens tidslinje", lambda _: self._show_timeline())
         item("Öppna dagens fil", lambda _: self._open_today())
         item("Visa mappen", lambda _: self._reveal())
         item("Radera dagens fil…", lambda _: self._delete_today())
@@ -216,6 +217,18 @@ class DayLogApp:
         self.pause_mode = "none"
         self._rebuild_menu()
         self._refresh_icon()
+
+    def _show_timeline(self):
+        if not self.folder:
+            return
+        files = day_files(self.folder, day_string())
+        if not files:
+            return
+        try:
+            from .timeline import build_timeline
+            _xdg_open(build_timeline(files, day_string()))
+        except Exception:
+            pass
 
     def _open_today(self):
         f = self.recorder.today_file()

@@ -169,6 +169,7 @@ internal sealed class TrayAppContext : ApplicationContext
             m.Items.Add(pause);
         }
         m.Items.Add(new ToolStripSeparator());
+        m.Items.Add(new ToolStripMenuItem("Visa dagens tidslinje", null, (_, _) => ShowTimeline()));
         m.Items.Add(new ToolStripMenuItem("Öppna dagens fil", null, (_, _) => OpenToday()));
         m.Items.Add(new ToolStripMenuItem("Visa mappen", null, (_, _) => RevealFolder()));
         m.Items.Add(new ToolStripMenuItem("Radera dagens fil…", null, (_, _) => DeleteToday()));
@@ -194,6 +195,16 @@ internal sealed class TrayAppContext : ApplicationContext
 
     void PauseFor(int minutes) { _pauseMode = PauseMode.Until; _pauseUntil = DateTime.Now.AddMinutes(minutes); _recorder.Enqueue(_recorder.PauseOrStop); RefreshIcon(); }
     void PauseIndef() { _pauseMode = PauseMode.Indefinite; _recorder.Enqueue(_recorder.PauseOrStop); RefreshIcon(); }
+
+    void ShowTimeline()
+    {
+        if (_folder == null) return;
+        var files = LogWriter.DayFiles(_folder, LogWriter.DayString());
+        if (files.Count == 0) return;
+        var path = Timeline.Build(files, LogWriter.DayString());
+        if (path != null)
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
+    }
 
     void OpenToday()
     {
