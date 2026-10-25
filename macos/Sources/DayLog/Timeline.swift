@@ -133,25 +133,34 @@ enum Timeline {
 
     private static func renderText(_ t: String) -> String {
         let normalized = t.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
-        var rendered: [String] = []
+        var items: [(String?, String)] = []   // (prefix, html)
         var prev: String? = nil
         for rawLine in normalized.components(separatedBy: "\n") {
             var line = rawLine.replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
                 .trimmingCharacters(in: .whitespaces)
             if line.isEmpty || line == prev { continue }
             prev = line
-            var label = ""
-            for pfx in ["menu", "window"] {
-                let tag = "[\(pfx)] "
+            var pfx: String? = nil
+            for p in ["menu", "window"] {
+                let tag = "[\(p)] "
                 if line.hasPrefix(tag) {
-                    label = "<span class=\"pfx\">\(pfx)</span>"
+                    pfx = p
                     line = String(line.dropFirst(tag.count))
                     break
                 }
             }
-            rendered.append(label + redChips(esc(line)))
+            items.append((pfx, redChips(esc(line))))
         }
-        return rendered.joined(separator: "<br>")
+        // Consecutive menu/window lines collapse into one muted line.
+        var out: [String] = []
+        var i = 0
+        while i < items.count {
+            guard let pfx = items[i].0 else { out.append(items[i].1); i += 1; continue }
+            var parts: [String] = []
+            while i < items.count, items[i].0 == pfx { parts.append(items[i].1); i += 1 }
+            out.append("<span class=\"pfx\">\(pfx)</span><span class=\"chrome\">\(parts.joined(separator: " · "))</span>")
+        }
+        return out.joined(separator: "<br>")
     }
 
     private static func redChips(_ escaped: String) -> String {
@@ -282,6 +291,7 @@ enum Timeline {
     .text{word-break:break-word}
     .pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
     color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
+.chrome{color:var(--muted);font-size:13px}
     .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
     padding:0 6px;font-size:12.5px;white-space:nowrap}
     .empty{color:var(--muted);text-align:center;padding:60px 0}

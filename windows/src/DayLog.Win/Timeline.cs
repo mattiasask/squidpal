@@ -166,24 +166,35 @@ public static class Timeline
     static string RenderText(string t)
     {
         t = t.Replace("\r\n", "\n").Replace("\r", "\n");
-        var rendered = new List<string>();
+        var items = new List<(string? Pfx, string Html)>();
         string? prev = null;
         foreach (var rawLine in t.Split('\n'))
         {
             var line = WsRun.Replace(rawLine, " ").Trim();
             if (line.Length == 0 || line == prev) continue;
             prev = line;
-            string label = "";
-            foreach (var pfx in new[] { "menu", "window" })
+            string? pfx = null;
+            foreach (var p in new[] { "menu", "window" })
             {
-                var tag = $"[{pfx}] ";
-                if (line.StartsWith(tag, StringComparison.Ordinal)) { label = $"<span class=\"pfx\">{pfx}</span>"; line = line[tag.Length..]; break; }
+                var tag = $"[{p}] ";
+                if (line.StartsWith(tag, StringComparison.Ordinal)) { pfx = p; line = line[tag.Length..]; break; }
             }
             string esc = Esc(line);
             esc = RedRe.Replace(esc, m => $"<span class=\"red\" title=\"hidden: {Esc(m.Groups[1].Value)}\">🔒 hidden</span>");
-            rendered.Add(label + esc);
+            items.Add((pfx, esc));
         }
-        return string.Join("<br>", rendered);
+        // Consecutive menu/window lines collapse into one muted line.
+        var outp = new List<string>();
+        int i = 0;
+        while (i < items.Count)
+        {
+            var pfx = items[i].Pfx;
+            if (pfx == null) { outp.Add(items[i].Html); i++; continue; }
+            var parts = new List<string>();
+            while (i < items.Count && items[i].Pfx == pfx) { parts.Add(items[i].Html); i++; }
+            outp.Add($"<span class=\"pfx\">{pfx}</span><span class=\"chrome\">{string.Join(" · ", parts)}</span>");
+        }
+        return string.Join("<br>", outp);
     }
 
     static string Esc(string s)
@@ -295,6 +306,7 @@ public static class Timeline
     .text{word-break:break-word}
     .pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
     color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
+.chrome{color:var(--muted);font-size:13px}
     .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
     padding:0 6px;font-size:12.5px;white-space:nowrap}
     .empty{color:var(--muted);text-align:center;padding:60px 0}

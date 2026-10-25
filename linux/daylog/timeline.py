@@ -10,7 +10,6 @@ import html as _html
 import json
 import os
 import re
-import tempfile
 from datetime import datetime, date
 
 _RED = re.compile(r"\[REDACTED:([^\]]+)\]")
@@ -55,23 +54,35 @@ def _pretty_date(day):
 
 def _text_html(t):
     t = t.replace("\r\n", "\n").replace("\r", "\n")
-    rendered, prev = [], None
+    items, prev = [], None            # (prefix or None, html)
     for raw in t.split("\n"):
         line = _WS.sub(" ", raw).strip()
         if not line or line == prev:
             continue
         prev = line
-        label = ""
-        for pfx in ("menu", "window"):
-            tag = f"[{pfx}] "
+        pfx = None
+        for p in ("menu", "window"):
+            tag = f"[{p}] "
             if line.startswith(tag):
-                label = f'<span class="pfx">{pfx}</span>'
-                line = line[len(tag):]
+                pfx, line = p, line[len(tag):]
                 break
         esc = _html.escape(line, quote=False)
         esc = _RED.sub(lambda m: f'<span class="red" title="hidden: {_html.escape(m.group(1))}">🔒 hidden</span>', esc)
-        rendered.append(label + esc)
-    return "<br>".join(rendered)
+        items.append((pfx, esc))
+    # Consecutive menu/window lines collapse into one muted line.
+    out, i = [], 0
+    while i < len(items):
+        pfx, esc = items[i]
+        if pfx is None:
+            out.append(esc)
+            i += 1
+            continue
+        parts = []
+        while i < len(items) and items[i][0] == pfx:
+            parts.append(items[i][1])
+            i += 1
+        out.append(f'<span class="pfx">{pfx}</span><span class="chrome">{" · ".join(parts)}</span>')
+    return "<br>".join(out)
 
 
 def _read_events(files):
@@ -180,11 +191,20 @@ background:var(--tag-bg);color:var(--tag-ink);padding:2px 7px;border-radius:6px;
 .text{word-break:break-word}
 .pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
 color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
+.chrome{color:var(--muted);font-size:13px}
 .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
 padding:0 6px;font-size:12.5px;white-space:nowrap}
 .empty{color:var(--muted);text-align:center;padding:60px 0}
 footer{color:var(--muted);font-size:12px;text-align:center;margin-top:30px}
 """
+
+
+def _out_dir():
+    d = os.environ.get("XDG_RUNTIME_DIR")
+    if not d or not os.path.isdir(d):
+        d = os.path.join(os.path.expanduser("~"), ".cache", "squidpal")
+    os.makedirs(d, mode=0o700, exist_ok=True)
+    return d
 
 
 def build_timeline(files, day, out_dir=None):
@@ -213,8 +233,14 @@ def build_timeline(files, day, out_dir=None):
            f'<footer>Generated {gen} · all data stays on your computer</footer>'
            f'</div></body></html>')
 
-    out_dir = out_dir or tempfile.gettempdir()
+    out_dir = out_dir or _out_dir()
     path = os.path.join(out_dir, f"squidpal-timeline-{day}.html")
-    with open(path, "w", encoding="utf-8") as fh:
+    # Private to this user: /tmp is shared on multi-user systems.
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write(doc)
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
     return path

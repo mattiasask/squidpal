@@ -27,7 +27,9 @@ class DayStats:
     bytes: int
 
 
-_DAY_FILE_RE = re.compile(r"\d{4}-\d{2}-\d{2}(?:-\d+)?\.jsonl")
+# Own day files, and the timeline view of them (which would otherwise be
+# re-recorded under the browser).
+_DAY_FILE_RE = re.compile(r"\d{4}-\d{2}-\d{2}(?:-\d+)?\.jsonl|squidpal-timeline-\d{4}-\d{2}-\d{2}\.html|^Squidpal — \d{4}-\d{2}-\d{2}")
 
 
 class Recorder:

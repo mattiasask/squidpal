@@ -52,8 +52,9 @@ restart, everything is written once more).
 
 ## Text prefixes
 
-Within `text`, lines read from parts of the active app other than its main
-content are tagged with a prefix so an assistant can tell them apart:
+Within `text`, every line read from parts of the active app other than its
+main content carries a prefix, so an assistant can tell them apart (or skip
+them):
 
 - `[menu] …` — the app's menu-bar titles (macOS).
 - `[window] …` — window-chrome / toolbar text around the main content (macOS).

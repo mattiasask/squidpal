@@ -70,7 +70,8 @@ internal sealed class Recorder : IDisposable
     DayStats _stats = new(LogWriter.DayString(), 0, 0, 0);
 
     static readonly System.Text.RegularExpressions.Regex DayFileName =
-        new(@"\d{4}-\d{2}-\d{2}(?:-\d+)?\.jsonl", System.Text.RegularExpressions.RegexOptions.Compiled);
+        new(@"\d{4}-\d{2}-\d{2}(?:-\d+)?\.jsonl|squidpal-timeline-\d{4}-\d{2}-\d{2}\.html|^Squidpal — \d{4}-\d{2}-\d{2}",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
 
     // ---- public ops (enqueue from UI thread)
 

@@ -65,7 +65,8 @@ final class Recorder: @unchecked Sendable {
     /// "delete today". Process-local hashes: a restart writes everything once.
     private var seenLines: [String: Set<Int>] = [:]
     private static let maxSeenPerApp = 300_000
-    private static let dayFileName = try! NSRegularExpression(pattern: "\\d{4}-\\d{2}-\\d{2}(?:-\\d+)?\\.jsonl")
+    private static let dayFileName = try! NSRegularExpression(
+        pattern: "\\d{4}-\\d{2}-\\d{2}(?:-\\d+)?\\.jsonl|squidpal-timeline-\\d{4}-\\d{2}-\\d{2}\\.html|^Squidpal — \\d{4}-\\d{2}-\\d{2}")
 
     private var stats = DayStats(day: LogWriter.dayString(), entries: 0, redactions: 0, bytes: 0)
     private let defaults = UserDefaults.standard
@@ -155,7 +156,11 @@ final class Recorder: @unchecked Sendable {
                 if webArea != nil {
                     // Browser chrome (tabs, toolbar) lives outside the web area.
                     let chrome = AXReader.windowText(w, timeBudget: 1, nodeBudget: 3000).text
-                    if !chrome.isEmpty { parts.append("[window] " + String(chrome.prefix(4000))) }
+                    if !chrome.isEmpty {
+                        let tagged = chrome.prefix(4000).split(separator: "\n", omittingEmptySubsequences: true)
+                            .map { "[window] " + $0 }.joined(separator: "\n")
+                        parts.append(tagged)
+                    }
                 }
                 parts.append(snap.text)
                 text = newLines(parts.joined(separator: "\n"), app: ctx.bundleID)
