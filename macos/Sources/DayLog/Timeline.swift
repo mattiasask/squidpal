@@ -291,7 +291,7 @@ enum Timeline {
     .text{word-break:break-word}
     .pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
     color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
-.chrome{color:var(--muted);font-size:13px}
+    .chrome{color:var(--muted);font-size:13px}
     .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
     padding:0 6px;font-size:12.5px;white-space:nowrap}
     .empty{color:var(--muted);text-align:center;padding:60px 0}
