@@ -2,7 +2,7 @@
 
 Self-contained (inline CSS, no network). Redaction markers [REDACTED:kind] are
 rendered as a lock chip, never expanded, so the viewer SEES what was hidden.
-Shared design with the macOS/Windows builds.
+Newest activity first. Shared design with the macOS/Windows builds.
 """
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ import tempfile
 from datetime import datetime, date
 
 _RED = re.compile(r"\[REDACTED:([^\]]+)\]")
+_WS = re.compile(r"[ \t]+")
 _TAGS = {"update": "updated", "scroll": "scrolled",
          "typing": "typed", "selection": "selected", "clipboard": "copied"}
 _WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -29,7 +30,7 @@ def _fmt_dur(sec):
     if m < 60:
         return f"{m}m {s}s" if s else f"{m}m"
     h, m = divmod(m, 60)
-    return f"{h}t {m}m" if m else f"{h}t"
+    return f"{h}h {m}m" if m else f"{h}h"
 
 
 def _hhmm(ts):
@@ -37,6 +38,10 @@ def _hhmm(ts):
         return datetime.fromisoformat(ts).strftime("%H:%M")
     except Exception:
         return (ts or "")[11:16]
+
+
+def _plural(n, s, p):
+    return f"{n} {s if n == 1 else p}"
 
 
 def _pretty_date(day):
@@ -49,10 +54,24 @@ def _pretty_date(day):
 
 
 def _text_html(t):
-    esc = _html.escape(t, quote=False)
-    return _RED.sub(
-        lambda m: f'<span class="red" title="hidden: {_html.escape(m.group(1))}">🔒 hidden</span>',
-        esc).replace("\n", "<br>")
+    t = t.replace("\r\n", "\n").replace("\r", "\n")
+    rendered, prev = [], None
+    for raw in t.split("\n"):
+        line = _WS.sub(" ", raw).strip()
+        if not line or line == prev:
+            continue
+        prev = line
+        label = ""
+        for pfx in ("menu", "window"):
+            tag = f"[{pfx}] "
+            if line.startswith(tag):
+                label = f'<span class="pfx">{pfx}</span>'
+                line = line[len(tag):]
+                break
+        esc = _html.escape(line, quote=False)
+        esc = _RED.sub(lambda m: f'<span class="red" title="hidden: {_html.escape(m.group(1))}">🔒 hidden</span>', esc)
+        rendered.append(label + esc)
+    return "<br>".join(rendered)
 
 
 def _read_events(files):
@@ -91,9 +110,17 @@ def _group(events):
     return groups
 
 
+def _title(g):
+    t = (g.get("page") or g.get("win") or "").strip()
+    app = (g.get("app") or "").strip()
+    if app and f" - {app}" in t:
+        t = t.split(f" - {app}")[0].strip()
+    return t
+
+
 def _group_html(g):
     app = _html.escape(g["app"] or "Unknown app")
-    win = _html.escape(g["win"] or "")
+    win = _html.escape(_title(g))
     head = [f'<span class="time">{_hhmm(g["ts"])}</span>',
             f'<span class="app">{app}</span>']
     if win:
@@ -105,8 +132,7 @@ def _group_html(g):
 
     url_line = ""
     if g["url"]:
-        label = _html.escape((g["page"] + " — " if g["page"] else "") + g["url"])
-        url_line = f'<div class="url">{label}</div>'
+        url_line = f'<div class="url">{_html.escape(g["url"])}</div>'
 
     body = []
     for e in g["items"]:
@@ -151,7 +177,9 @@ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .ev{display:flex;gap:8px;align-items:flex-start}
 .tag{flex:none;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
 background:var(--tag-bg);color:var(--tag-ink);padding:2px 7px;border-radius:6px;margin-top:2px}
-.text{white-space:pre-wrap;word-break:break-word}
+.text{word-break:break-word}
+.pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
+color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
 .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
 padding:0 6px;font-size:12.5px;white-space:nowrap}
 .empty{color:var(--muted);text-align:center;padding:60px 0}
@@ -165,18 +193,22 @@ def build_timeline(files, day, out_dir=None):
     total_red = sum(int(e.get("redactions") or 0) for e in events)
     apps = len({e.get("app") for e in events if e.get("app")})
 
+    groups = [g for g in groups if _title(g) or g["url"] or any(e.get("text") for e in g["items"])]
     if groups:
-        cards = "".join(_group_html(g) for g in groups)
+        cards = "".join(_group_html(g) for g in reversed(groups))
     else:
         cards = '<div class="empty">Nothing recorded today yet.</div>'
 
+    sub = (_plural(len(events), "entry", "entries") + " · "
+           + _plural(total_red, "redaction", "redactions") + " · "
+           + _plural(apps, "app", "apps"))
     gen = datetime.now().strftime("%H:%M")
     doc = (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
            f'<meta name="viewport" content="width=device-width,initial-scale=1">'
            f'<title>Squidpal — {_html.escape(day)}</title><style>{_CSS}</style></head>'
            f'<body><div class="wrap"><header><h1>Squidpal</h1>'
            f'<div class="date">{_html.escape(_pretty_date(day))}</div>'
-           f'<div class="sub">{len(events)} entries · {total_red} redactions · {apps} apps</div>'
+           f'<div class="sub">{sub}</div>'
            f'</header><main>{cards}</main>'
            f'<footer>Generated {gen} · all data stays on your computer</footer>'
            f'</div></body></html>')

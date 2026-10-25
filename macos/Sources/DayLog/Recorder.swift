@@ -100,9 +100,15 @@ final class Recorder: @unchecked Sendable {
 
         let blocked = Redactor.isBlockedApp(bundleID: input.bundleID, name: input.appName)
 
-        if !blocked, !enabledPIDs.contains(pid) {
-            AXReader.enableAccessibility(pid: pid, bundleID: input.bundleID)
-            enabledPIDs.insert(pid)
+        if !blocked {
+            // Chromium/Electron tear down their accessibility tree when they think
+            // no assistive client is active, so (re)apply on every browser focus;
+            // once is enough for other apps.
+            let isBrowser = input.bundleID.map { AXReader.browsers.contains($0) } ?? false
+            if isBrowser || !enabledPIDs.contains(pid) {
+                AXReader.enableAccessibility(pid: pid, bundleID: input.bundleID)
+                enabledPIDs.insert(pid)
+            }
         }
 
         let appEl = AXUIElementCreateApplication(pid)

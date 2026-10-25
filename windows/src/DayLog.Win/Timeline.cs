@@ -7,7 +7,7 @@ namespace DayLog.Win;
 /// <summary>
 /// Builds a faithful, human-readable HTML timeline from a day's JSONL files.
 /// Self-contained (inline CSS, no network). Redaction markers [REDACTED:kind]
-/// are shown as a lock chip, never expanded, so the viewer SEES what was hidden.
+/// are shown as a lock chip, never expanded. Newest activity first.
 /// Shared design with the macOS/Linux builds.
 /// </summary>
 public static class Timeline
@@ -39,16 +39,23 @@ public static class Timeline
         int totalRed = events.Sum(e => e.Red);
         int apps = events.Where(e => !string.IsNullOrEmpty(e.App)).Select(e => e.App).Distinct().Count();
 
+        groups = groups.Where(g =>
+            Title(g).Length > 0 || g.Url != null || g.Items.Any(e => !string.IsNullOrEmpty(e.Text))).ToList();
+
         string cards = groups.Count == 0
             ? "<div class=\"empty\">Nothing recorded today yet.</div>"
-            : string.Concat(groups.Select(GroupHtml));
+            : string.Concat(Enumerable.Reverse(groups).Select(GroupHtml));
+
+        string sub = Plural(events.Count, "entry", "entries") + " · "
+            + Plural(totalRed, "redaction", "redactions") + " · "
+            + Plural(apps, "app", "apps");
 
         string doc = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             + $"<title>Squidpal — {Esc(day)}</title><style>{Css}</style></head>"
             + "<body><div class=\"wrap\"><header><h1>Squidpal</h1>"
             + $"<div class=\"date\">{Esc(PrettyDate(day))}</div>"
-            + $"<div class=\"sub\">{events.Count} entries · {totalRed} redactions · {apps} apps</div>"
+            + $"<div class=\"sub\">{sub}</div>"
             + $"</header><main>{cards}</main>"
             + $"<footer>Generated {DateTime.Now:HH:mm} · all data stays on your computer</footer>"
             + "</div></body></html>";
@@ -114,21 +121,32 @@ public static class Timeline
         return groups;
     }
 
+    /// <summary>Display title: prefer the page title, strip a trailing " - &lt;app&gt;"
+    /// suffix (browsers append " - Google Chrome - &lt;profile&gt;").</summary>
+    static string Title(Grp g)
+    {
+        var t = (g.Page ?? g.Win ?? "").Trim();
+        var app = (g.App ?? "").Trim();
+        if (app.Length > 0)
+        {
+            int i = t.IndexOf(" - " + app, StringComparison.Ordinal);
+            if (i >= 0) t = t.Substring(0, i).Trim();
+        }
+        return t;
+    }
+
     static string GroupHtml(Grp g)
     {
         var head = new StringBuilder();
         head.Append($"<span class=\"time\">{Hhmm(g.Ts)}</span>");
         head.Append($"<span class=\"app\">{Esc(g.App ?? "Unknown app")}</span>");
-        if (!string.IsNullOrEmpty(g.Win)) head.Append($"<span class=\"win\">{Esc(g.Win!)}</span>");
+        string t = Title(g);
+        if (t.Length > 0) head.Append($"<span class=\"win\">{Esc(t)}</span>");
         if (g.Dwell is { } d) head.Append($"<span class=\"dur\">· {FmtDur(d)}</span>");
         if (g.Red > 0) head.Append($"<span class=\"lock\" title=\"{g.Red} redactions in this block\">🔒</span>");
 
         string urlLine = "";
-        if (!string.IsNullOrEmpty(g.Url))
-        {
-            string label = (g.Page != null ? g.Page + " — " : "") + g.Url;
-            urlLine = $"<div class=\"url\">{Esc(label)}</div>";
-        }
+        if (!string.IsNullOrEmpty(g.Url)) urlLine = $"<div class=\"url\">{Esc(g.Url!)}</div>";
 
         var body = new StringBuilder();
         foreach (var e in g.Items)
@@ -143,13 +161,29 @@ public static class Timeline
     }
 
     static readonly Regex RedRe = new(@"\[REDACTED:([^\]]+)\]", RegexOptions.Compiled);
+    static readonly Regex WsRun = new(@"[ \t]+", RegexOptions.Compiled);
 
     static string RenderText(string t)
     {
-        string escaped = Esc(t.Replace("\r\n", "\n").Replace("\r", "\n"));
-        string replaced = RedRe.Replace(escaped,
-            m => $"<span class=\"red\" title=\"hidden: {Esc(m.Groups[1].Value)}\">🔒 hidden</span>");
-        return replaced.Replace("\n", "<br>");
+        t = t.Replace("\r\n", "\n").Replace("\r", "\n");
+        var rendered = new List<string>();
+        string? prev = null;
+        foreach (var rawLine in t.Split('\n'))
+        {
+            var line = WsRun.Replace(rawLine, " ").Trim();
+            if (line.Length == 0 || line == prev) continue;
+            prev = line;
+            string label = "";
+            foreach (var pfx in new[] { "menu", "window" })
+            {
+                var tag = $"[{pfx}] ";
+                if (line.StartsWith(tag, StringComparison.Ordinal)) { label = $"<span class=\"pfx\">{pfx}</span>"; line = line[tag.Length..]; break; }
+            }
+            string esc = Esc(line);
+            esc = RedRe.Replace(esc, m => $"<span class=\"red\" title=\"hidden: {Esc(m.Groups[1].Value)}\">🔒 hidden</span>");
+            rendered.Add(label + esc);
+        }
+        return string.Join("<br>", rendered);
     }
 
     static string Esc(string s)
@@ -202,8 +236,10 @@ public static class Timeline
         int m = s / 60, rs = s % 60;
         if (m < 60) return rs > 0 ? $"{m}m {rs}s" : $"{m}m";
         int h = m / 60, rm = m % 60;
-        return rm > 0 ? $"{h}t {rm}m" : $"{h}t";
+        return rm > 0 ? $"{h}h {rm}m" : $"{h}h";
     }
+
+    static string Plural(int n, string s, string p) => $"{n} {(n == 1 ? s : p)}";
 
     static readonly string[] Weekdays =
         { "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
@@ -220,7 +256,7 @@ public static class Timeline
         try
         {
             var dt = new DateTime(y, mo, d);
-            string wdName = Weekdays[(int)dt.DayOfWeek + 1];       // Sunday=0 -> index 1
+            string wdName = Weekdays[(int)dt.DayOfWeek + 1];
             string moName = (mo >= 1 && mo <= 12) ? Months[mo] : "";
             string s = $"{wdName} {d} {moName} {y}";
             return char.ToUpper(s[0]) + s.Substring(1);
@@ -256,7 +292,9 @@ public static class Timeline
     .ev{display:flex;gap:8px;align-items:flex-start}
     .tag{flex:none;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
     background:var(--tag-bg);color:var(--tag-ink);padding:2px 7px;border-radius:6px;margin-top:2px}
-    .text{white-space:pre-wrap;word-break:break-word}
+    .text{word-break:break-word}
+    .pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
     .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
     padding:0 6px;font-size:12.5px;white-space:nowrap}
     .empty{color:var(--muted);text-align:center;padding:60px 0}

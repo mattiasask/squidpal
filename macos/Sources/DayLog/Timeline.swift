@@ -2,27 +2,34 @@ import Foundation
 
 /// Builds a faithful, human-readable HTML timeline from a day's JSONL files.
 /// Self-contained (inline CSS, no network). Redaction markers [REDACTED:kind]
-/// are shown as a lock chip, never expanded, so the viewer SEES what was hidden.
+/// are shown as a lock chip, never expanded. Newest activity first.
 /// Shared design with the Windows/Linux builds.
 enum Timeline {
 
-    /// Writes the timeline HTML to a temp file and returns its URL.
     static func build(files: [URL], day: String) -> URL? {
         let events = readEvents(files)
-        let groups = group(events)
+        var groups = group(events)
         let totalRed = events.reduce(0) { $0 + intOf($1["redactions"]) }
         let apps = Set(events.compactMap { strOrNil($0["app"]) }).count
 
+        groups = groups.filter { g in
+            !title(g).isEmpty || g.url != nil || g.items.contains { strOrNil($0["text"]) != nil }
+        }
+
         let cards = groups.isEmpty
             ? "<div class=\"empty\">Nothing recorded today yet.</div>"
-            : groups.map { groupHTML($0) }.joined()
+            : groups.reversed().map { groupHTML($0) }.joined()
+
+        let sub = plural(events.count, "entry", "entries") + " · "
+            + plural(totalRed, "redaction", "redactions") + " · "
+            + plural(apps, "app", "apps")
 
         let doc = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             + "<title>Squidpal — \(esc(day))</title><style>\(css)</style></head>"
             + "<body><div class=\"wrap\"><header><h1>Squidpal</h1>"
             + "<div class=\"date\">\(esc(prettyDate(day)))</div>"
-            + "<div class=\"sub\">\(events.count) entries · \(totalRed) redactions · \(apps) apps</div>"
+            + "<div class=\"sub\">\(sub)</div>"
             + "</header><main>\(cards)</main>"
             + "<footer>Generated \(hm(Date())) · all data stays on your computer</footer>"
             + "</div></body></html>"
@@ -88,25 +95,33 @@ enum Timeline {
         return groups
     }
 
+    /// Display title: prefer the page title, strip a trailing " - <app>" suffix
+    /// (browsers append " - Google Chrome - <profile>" to window titles).
+    private static func title(_ g: Group) -> String {
+        var t = (g.page ?? g.win ?? "").trimmingCharacters(in: .whitespaces)
+        if let app = g.app, !app.isEmpty, let r = t.range(of: " - \(app)") {
+            t = String(t[..<r.lowerBound]).trimmingCharacters(in: .whitespaces)
+        }
+        return t
+    }
+
     private static func groupHTML(_ g: Group) -> String {
         var head = "<span class=\"time\">\(hhmm(g.ts))</span>"
             + "<span class=\"app\">\(esc(g.app ?? "Unknown app"))</span>"
-        if let win = g.win, !win.isEmpty { head += "<span class=\"win\">\(esc(win))</span>" }
+        let t = title(g)
+        if !t.isEmpty { head += "<span class=\"win\">\(esc(t))</span>" }
         if let d = g.dwell { head += "<span class=\"dur\">· \(fmtDur(d))</span>" }
         if g.red > 0 { head += "<span class=\"lock\" title=\"\(g.red) redactions in this block\">🔒</span>" }
 
         var urlLine = ""
-        if let u = g.url, !u.isEmpty {
-            let label = (g.page.map { $0 + " — " } ?? "") + u
-            urlLine = "<div class=\"url\">\(esc(label))</div>"
-        }
+        if let u = g.url, !u.isEmpty { urlLine = "<div class=\"url\">\(esc(u))</div>" }
 
         var body = ""
         for e in g.items {
-            guard let t = strOrNil(e["text"]) else { continue }
+            guard let tx = strOrNil(e["text"]) else { continue }
             let tag = tagFor(strOf(e["event"]))
             let tagHTML = tag.isEmpty ? "" : "<span class=\"tag\">\(tag)</span>"
-            body += "<div class=\"ev\">\(tagHTML)<div class=\"text\">\(renderText(t))</div></div>"
+            body += "<div class=\"ev\">\(tagHTML)<div class=\"text\">\(renderText(tx))</div></div>"
         }
         let bodyHTML = body.isEmpty ? "" : "<div class=\"body\">\(body)</div>"
         return "<section class=\"card\"><div class=\"chead\">\(head)</div>\(urlLine)\(bodyHTML)</section>"
@@ -117,23 +132,42 @@ enum Timeline {
     private static let redRE = try! NSRegularExpression(pattern: "\\[REDACTED:([^\\]]+)\\]")
 
     private static func renderText(_ t: String) -> String {
-        let escaped = esc(t)
+        let normalized = t.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+        var rendered: [String] = []
+        var prev: String? = nil
+        for rawLine in normalized.components(separatedBy: "\n") {
+            var line = rawLine.replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespaces)
+            if line.isEmpty || line == prev { continue }
+            prev = line
+            var label = ""
+            for pfx in ["menu", "window"] {
+                let tag = "[\(pfx)] "
+                if line.hasPrefix(tag) {
+                    label = "<span class=\"pfx\">\(pfx)</span>"
+                    line = String(line.dropFirst(tag.count))
+                    break
+                }
+            }
+            rendered.append(label + redChips(esc(line)))
+        }
+        return rendered.joined(separator: "<br>")
+    }
+
+    private static func redChips(_ escaped: String) -> String {
         let ns = escaped as NSString
         let matches = redRE.matches(in: escaped, range: NSRange(location: 0, length: ns.length))
-        var result = escaped
-        if !matches.isEmpty {
-            var out = ""
-            var last = 0
-            for m in matches {
-                out += ns.substring(with: NSRange(location: last, length: m.range.location - last))
-                let kind = ns.substring(with: m.range(at: 1))
-                out += "<span class=\"red\" title=\"hidden: \(esc(kind))\">🔒 hidden</span>"
-                last = m.range.location + m.range.length
-            }
-            out += ns.substring(from: last)
-            result = out
+        guard !matches.isEmpty else { return escaped }
+        var out = ""
+        var last = 0
+        for m in matches {
+            out += ns.substring(with: NSRange(location: last, length: m.range.location - last))
+            let kind = ns.substring(with: m.range(at: 1))
+            out += "<span class=\"red\" title=\"hidden: \(esc(kind))\">🔒 hidden</span>"
+            last = m.range.location + m.range.length
         }
-        return result.replacingOccurrences(of: "\n", with: "<br>")
+        out += ns.substring(from: last)
+        return out
     }
 
     private static func esc(_ s: String) -> String {
@@ -173,7 +207,7 @@ enum Timeline {
         }
     }
 
-    // MARK: Dates
+    // MARK: Dates / format
 
     private static let weekdays = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     private static let months = ["", "January", "February", "March", "April", "May", "June",
@@ -196,8 +230,10 @@ enum Timeline {
         let m = s / 60, rs = s % 60
         if m < 60 { return rs > 0 ? "\(m)m \(rs)s" : "\(m)m" }
         let h = m / 60, rm = m % 60
-        return rm > 0 ? "\(h)t \(rm)m" : "\(h)t"
+        return rm > 0 ? "\(h)h \(rm)m" : "\(h)h"
     }
+
+    private static func plural(_ n: Int, _ s: String, _ p: String) -> String { "\(n) \(n == 1 ? s : p)" }
 
     private static func prettyDate(_ day: String) -> String {
         let p = day.split(separator: "-").compactMap { Int($0) }
@@ -243,7 +279,9 @@ enum Timeline {
     .ev{display:flex;gap:8px;align-items:flex-start}
     .tag{flex:none;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
     background:var(--tag-bg);color:var(--tag-ink);padding:2px 7px;border-radius:6px;margin-top:2px}
-    .text{white-space:pre-wrap;word-break:break-word}
+    .text{word-break:break-word}
+    .pfx{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
     .red{background:var(--chip-bg);color:var(--chip-ink);border-radius:5px;
     padding:0 6px;font-size:12.5px;white-space:nowrap}
     .empty{color:var(--muted);text-align:center;padding:60px 0}
